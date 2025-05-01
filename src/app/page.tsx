@@ -1,9 +1,10 @@
+
 "use client";
 
 import React, { useState, useCallback } from 'react';
 import { Scoreboard } from '@/components/scoreboard';
 import { GameBoard } from '@/components/game-board';
-import { AlreadySelectedDialog } from '@/components/already-selected-dialog';
+import { AlreadySelectedDialog } from '@/components/already-selected-dialog'; // Corrected import path
 import { gameData } from '@/lib/game-data';
 import type { TeamScores } from '@/lib/types';
 import { Button } from '@/components/ui/button';

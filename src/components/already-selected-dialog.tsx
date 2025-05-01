@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -9,6 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 
 interface AlreadySelectedDialogProps {
   isOpen: boolean;
@@ -17,16 +19,18 @@ interface AlreadySelectedDialogProps {
 
 export function AlreadySelectedDialog({ isOpen, onClose }: AlreadySelectedDialogProps) {
   return (
-    <AlertDialog open={isOpen} onOpenChange={onClose}>
+    <AlertDialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Question Already Selected</AlertDialogTitle>
+          <AlertDialogTitle>Already Selected</AlertDialogTitle>
           <AlertDialogDescription>
-            This question has already been chosen. Please select another question.
+            This question has already been selected. Please choose another one.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogAction onClick={onClose}>OK</AlertDialogAction>
+          <AlertDialogAction asChild>
+             <Button onClick={onClose}>OK</Button>
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

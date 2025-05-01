@@ -1,8 +1,11 @@
 "use client";
 
-import type { Category } from "@/lib/types";
+import type { Category, Question } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
+import { useState } from "react";
+import { Button } from "./ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose, DialogDescription } from "@/components/ui/dialog";
 
 interface GameBoardProps {
   categories: Category[];
@@ -15,7 +18,18 @@ export function GameBoard({
   selectedQuestions,
   onQuestionSelect,
 }: GameBoardProps) {
+
+  const [open, setOpen] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
+
   const getQuestionId = (catIdx: number, qIdx: number) => `${catIdx}-${qIdx}`;
+
+  const handleQuestionClick = (categoryIndex: number, questionIndex: number) => {
+        onQuestionSelect(categoryIndex, questionIndex);
+        const selectedQuestion = categories[categoryIndex].questions[questionIndex];
+        setCurrentQuestion(selectedQuestion);
+        setOpen(true);
+      };
 
   return (
     <div className="grid grid-cols-6 gap-2 md:gap-4">
@@ -39,7 +53,7 @@ export function GameBoard({
           return (
             <Card
               key={questionId}
-              onClick={() => onQuestionSelect(catIndex, qIndex)}
+              onClick={() => {handleQuestionClick(catIndex, qIndex)}}
               className={cn(
                 "bg-muted text-muted-foreground text-center font-bold p-4 md:p-6 rounded-lg shadow-md cursor-pointer transition-colors duration-200 flex items-center justify-center h-20 md:h-28",
                 isSelected
@@ -57,6 +71,20 @@ export function GameBoard({
           );
         })
       ))}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Question</DialogTitle>
+          </DialogHeader>
+          {currentQuestion && (
+            <div>
+              <DialogDescription className="mb-4">
+                {currentQuestion.question}
+              </DialogDescription>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
