@@ -2,6 +2,56 @@ import type { Category } from './types';
 
 export const gameData: Category[] = [
   {
+    title: 'New Testament',
+    questions: [
+      { points: 100, question: 'Who betrayed Jesus for 30 pieces of silver?', answer: 'Judas Iscariot' },
+      { points: 200, question: 'What is the first book of the New Testament?', answer: 'Matthew' },
+      { points: 300, question: 'Which disciple walked on water with Jesus?', answer: 'Peter' },
+      { points: 400, question: 'What was the name of the river where Jesus was baptized?', answer: 'Jordan River' },
+      { points: 500, question: 'Which apostle wrote the majority of the letters in the New Testament?', answer: 'Paul' },
+    ],
+  },
+  {
+    title: 'Old Testament',
+    questions: [
+      { points: 100, question: 'Who was the first king of Israel?', answer: 'Saul' },
+      { points: 200, question: 'What giant did David defeat with a sling and stone?', answer: 'Goliath' },
+      { points: 300, question: 'What was the name of Moses\' sister?', answer: 'Miriam' },
+      { points: 400, question: 'Which prophet was swallowed by a great fish?', answer: 'Jonah' },
+      { points: 500, question: 'What are the first five books of the Old Testament called?', answer: 'The Torah' },
+    ],
+  },
+  {
+    title: 'Sports',
+    questions: [
+      { points: 100, question: 'Which country hosted the 2016 Summer Olympics?', answer: 'Brazil' },
+      { points: 200, question: 'Who is known as the “Great One” in ice hockey?', answer: 'Wayne Gretzky' },
+      { points: 300, question: 'Which sport uses terms like “love” and “deuce”?', answer: 'Tennis' },
+      { points: 400, question: 'What is the maximum score you can achieve in a single frame in bowling?', answer: '300' },
+      { points: 500, question: 'Which country won the FIFA World Cup in 2018?', answer: 'France' },
+    ],
+  },
+  {
+    title: 'Fashion',
+    questions: [
+      { points: 100, question: 'Which French fashion designer is known for the little black dress?', answer: 'Coco Chanel' },
+      { points: 200, question: 'Which brand is famous for its logo featuring a swoosh?', answer: 'Nike' },
+      { points: 300, question: 'Which fashion designer is known for his red soles on shoes?', answer: 'Christian Louboutin' },
+      { points: 400, question: 'Which famous designer created the iconic "wrap dress"?', answer: 'Diane von Furstenberg' },
+      { points: 500, question: 'Which color is associated with the fashion label Valentino?', answer: 'Red' },
+    ],
+  },
+  {
+    title: 'Books',
+    questions: [
+      { points: 100, question: 'Who wrote "Harry Potter and the Sorcerer\'s Stone"?', answer: 'J.K. Rowling' },
+      { points: 200, question: 'Which book begins with the line "Call me Ishmael"?', answer: 'Moby-Dick' },
+      { points: 300, question: 'Which novel features the character Atticus Finch?', answer: 'To Kill a Mockingbird' },
+      { points: 400, question: 'Who wrote "The Great Gatsby"?', answer: 'F. Scott Fitzgerald' },
+      { points: 500, question: 'Which author is known for writing "The Lord of the Rings" trilogy?', answer: 'J.R.R. Tolkien' },
+    ],
+  },
+  {
     title: 'History',
     questions: [
       { points: 100, question: 'Who was the first President of the United States?', answer: 'George Washington' },
@@ -9,56 +59,6 @@ export const gameData: Category[] = [
       { points: 300, question: 'Which empire built the Colosseum?', answer: 'The Roman Empire' },
       { points: 400, question: 'Who was known as the Iron Lady?', answer: 'Margaret Thatcher' },
       { points: 500, question: 'In which country did the Industrial Revolution begin?', answer: 'United Kingdom' },
-    ],
-  },
-  {
-    title: 'Science',
-    questions: [
-      { points: 100, question: 'What planet is known as the Red Planet?', answer: 'Mars' },
-      { points: 200, question: 'What gas do plants absorb from the atmosphere?', answer: 'Carbon dioxide' },
-      { points: 300, question: 'What is the powerhouse of the cell?', answer: 'Mitochondria' },
-      { points: 400, question: 'What is H2O commonly known as?', answer: 'Water' },
-      { points: 500, question: 'What law explains why objects fall to the ground?', answer: 'Law of Gravity' },
-    ],
-  },
-  {
-    title: 'Literature',
-    questions: [
-      { points: 100, question: 'Who wrote "Romeo and Juliet"?', answer: 'William Shakespeare' },
-      { points: 200, question: 'What is the name of the hobbit played by Elijah Wood in the Lord of the Rings?', answer: 'Frodo Baggins' },
-      { points: 300, question: 'Who wrote "To Kill a Mockingbird"?', answer: 'Harper Lee' },
-      { points: 400, question: 'What novel begins with "Call me Ishmael"?', answer: 'Moby-Dick' },
-      { points: 500, question: 'Who is the author of "1984"?', answer: 'George Orwell' },
-    ],
-  },
-  {
-    title: 'Movies',
-    questions: [
-      { points: 100, question: 'What movie features the quote “I’ll be back”?', answer: 'The Terminator' },
-      { points: 200, question: 'Who directed "Jurassic Park"?', answer: 'Steven Spielberg' },
-      { points: 300, question: 'What movie won Best Picture in 1994?', answer: 'Forrest Gump' },
-      { points: 400, question: 'Which actor played the Joker in "The Dark Knight"?', answer: 'Heath Ledger' },
-      { points: 500, question: 'In what film does a character say “Here’s looking at you, kid”?', answer: 'Casablanca' },
-    ],
-  },
-  {
-    title: 'Music',
-    questions: [
-      { points: 100, question: 'Who is known as the King of Pop?', answer: 'Michael Jackson' },
-      { points: 200, question: 'What band wrote the album "Abbey Road"?', answer: 'The Beatles' },
-      { points: 300, question: 'Which artist is known for "Shape of You"?', answer: 'Ed Sheeran' },
-      { points: 400, question: 'Who composed the Four Seasons?', answer: 'Antonio Vivaldi' },
-      { points: 500, question: 'What genre is associated with Beethoven?', answer: 'Classical' },
-    ],
-  },
-  {
-    title: 'Geography',
-    questions: [
-      { points: 100, question: 'What is the capital of France?', answer: 'Paris' },
-      { points: 200, question: 'Which continent is the Sahara Desert in?', answer: 'Africa' },
-      { points: 300, question: 'What is the largest ocean on Earth?', answer: 'Pacific Ocean' },
-      { points: 400, question: 'Mount Everest lies between which two countries?', answer: 'Nepal and China' },
-      { points: 500, question: 'What river runs through Baghdad?', answer: 'Tigris River' },
     ],
   },
 ];
