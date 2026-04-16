@@ -1,0 +1,53 @@
+/* ─── RESET & BASE ─────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  background: #05050F;
+  color: #fff;
+  font-family: 'Outfit', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── APP SHELL ────────────────────────────────────────────────────────────── */
+.jp-app {
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse 90% 50% at 50% -5%, rgba(100,50,255,0.22) 0%, transparent 55%),
+    radial-gradient(ellipse 55% 45% at 95% 95%, rgba(20,70,200,0.14) 0%, transparent 55%),
+    radial-gradient(ellipse 45% 40% at 5%  85%, rgba(200,40,120,0.1)  0%, transparent 55%),
+    #05050F;
+  color: #fff;
+  padding: 28px 20px 48px;
+  user-select: none;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* subtle grid texture */
+.jp-app::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.013) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.013) 1px, transparent 1px);
+  background-size: 64px 64px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.jp-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 1140px;
+  margin: 0 auto;
+}

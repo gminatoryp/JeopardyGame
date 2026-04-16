@@ -1,0 +1,96 @@
+/* ─── TITLE ────────────────────────────────────────────────────────────────── */
+.jp-title-wrap {
+  text-align: center;
+  margin-bottom: 38px;
+}
+.jp-eyebrow {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.38em;
+  text-transform: uppercase;
+  color: rgba(245,200,66,0.55);
+  margin-bottom: 6px;
+}
+.jp-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(3.8rem, 9vw, 6.4rem);
+  letter-spacing: 0.2em;
+  line-height: 1;
+  background: linear-gradient(155deg, #FEF3C7 0%, #FCD34D 35%, #F59E0B 70%, #D97706 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 32px rgba(245,200,66,0.5));
+}
+.jp-title-bar {
+  width: 100px;
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent, rgba(245,200,66,0.7), transparent);
+  margin: 10px auto 0;
+}
+
+/* ─── SCORE CARDS ──────────────────────────────────────────────────────────── */
+.jp-scores {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  margin-bottom: 34px;
+}
+
+.jp-score-card {
+  flex: 1;
+  max-width: 210px;
+  border-radius: 18px;
+  padding: 20px 22px 16px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.jp-score-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, var(--glow) 0%, transparent 65%);
+  pointer-events: none;
+}
+.jp-score-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 15%; right: 15%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+}
+
+.jp-score-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+  opacity: 0.85;
+}
+.jp-score-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.6rem;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  color: #fff;
+}
+.jp-score-num.neg { color: #F87171; }
+
+.jp-score-delta {
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-top: 5px;
+  height: 16px;
+  opacity: 0;
+  transform: translateY(5px);
+  transition: opacity 0.25s, transform 0.25s;
+}
+.jp-score-delta.show {
+  opacity: 1;
+  transform: translateY(0);
+}

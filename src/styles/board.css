@@ -1,0 +1,131 @@
+/* ─── BOARD FRAME ──────────────────────────────────────────────────────────── */
+.jp-board-frame {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 22px;
+  padding: 14px;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.025),
+    0 48px 96px rgba(0,0,0,0.65),
+    inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+.jp-board {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+/* ─── CATEGORY HEADER ──────────────────────────────────────────────────────── */
+.jp-cat {
+  background: linear-gradient(175deg, rgba(245,200,66,0.13) 0%, rgba(245,200,66,0.04) 100%);
+  border: 1px solid rgba(245,200,66,0.28);
+  border-radius: 11px;
+  padding: 12px 8px;
+  text-align: center;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.05rem;
+  letter-spacing: 0.1em;
+  color: #F5C842;
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.25;
+  filter: drop-shadow(0 0 6px rgba(245,200,66,0.15));
+}
+
+/* ─── CLUE CELL ────────────────────────────────────────────────────────────── */
+.jp-cell {
+  position: relative;
+  border-radius: 11px;
+  min-height: 92px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.06);
+  transition:
+    transform 0.2s cubic-bezier(0.34,1.56,0.64,1),
+    box-shadow 0.2s,
+    border-color 0.2s,
+    opacity 0.3s;
+}
+
+/* internal layers */
+.jp-cell-bg {
+  position: absolute;
+  inset: 0;
+  transition: opacity 0.2s;
+}
+.jp-cell-shine {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 50%, rgba(255,255,255,0.02) 100%);
+  pointer-events: none;
+}
+.jp-cell-top-bar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.jp-cell-dollar {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem;
+  letter-spacing: 0.06em;
+  background: linear-gradient(155deg, #FEF3C7 10%, #F5C842 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 2px 8px rgba(245,200,66,0.35));
+  position: relative;
+  z-index: 1;
+  transition: filter 0.2s;
+}
+
+/* hover state */
+.jp-cell:not(.used):hover {
+  transform: translateY(-5px) scale(1.025);
+  box-shadow:
+    0 14px 36px rgba(0,0,0,0.55),
+    0 0 0 1px rgba(245,200,66,0.4),
+    0 0 20px rgba(245,200,66,0.12);
+  border-color: rgba(245,200,66,0.45);
+  z-index: 2;
+}
+.jp-cell:not(.used):hover .jp-cell-top-bar  { opacity: 1; }
+.jp-cell:not(.used):hover .jp-cell-dollar   { filter: drop-shadow(0 2px 14px rgba(245,200,66,0.6)); }
+.jp-cell:not(.used):active                  { transform: translateY(-1px) scale(0.985); }
+
+/* used state */
+.jp-cell.used {
+  cursor: default;
+  opacity: 0.18;
+  filter: grayscale(1);
+  pointer-events: none;
+}
+
+/* ─── PER-COLUMN ACCENT COLOURS ────────────────────────────────────────────── */
+.jp-cell[data-col="0"] .jp-cell-bg      { background: linear-gradient(160deg, #1A0A2E 0%, #0C0B1E 100%); }
+.jp-cell[data-col="0"] .jp-cell-top-bar { background: linear-gradient(90deg, transparent, #C084FC, transparent); }
+
+.jp-cell[data-col="1"] .jp-cell-bg      { background: linear-gradient(160deg, #071828 0%, #060E1E 100%); }
+.jp-cell[data-col="1"] .jp-cell-top-bar { background: linear-gradient(90deg, transparent, #38BDF8, transparent); }
+
+.jp-cell[data-col="2"] .jp-cell-bg      { background: linear-gradient(160deg, #071A14 0%, #060E12 100%); }
+.jp-cell[data-col="2"] .jp-cell-top-bar { background: linear-gradient(90deg, transparent, #34D399, transparent); }
+
+.jp-cell[data-col="3"] .jp-cell-bg      { background: linear-gradient(160deg, #1C1007 0%, #120C06 100%); }
+.jp-cell[data-col="3"] .jp-cell-top-bar { background: linear-gradient(90deg, transparent, #FB923C, transparent); }
+
+.jp-cell[data-col="4"] .jp-cell-bg      { background: linear-gradient(160deg, #1C0808 0%, #120606 100%); }
+.jp-cell[data-col="4"] .jp-cell-top-bar { background: linear-gradient(90deg, transparent, #F87171, transparent); }
+
+/* ─── ROW DEPTH — dollar text grows slightly for higher values ─────────────── */
+.jp-row-1 .jp-cell-dollar { font-size: 2.05rem; }
+.jp-row-2 .jp-cell-dollar { font-size: 2.1rem;  }
+.jp-row-3 .jp-cell-dollar { font-size: 2.15rem; }
+.jp-row-4 .jp-cell-dollar { font-size: 2.2rem;  }
