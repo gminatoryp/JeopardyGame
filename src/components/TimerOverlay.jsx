@@ -15,15 +15,18 @@ export default function TimerOverlay({ question, onDone }) {
     return () => clearTimeout(id)
   }, [count, onDone])
 
-  const progress = (count / DURATION) * 100
   const radius = 54
   const circumference = 2 * Math.PI * radius
   const dashOffset = circumference * (1 - count / DURATION)
 
   return (
     <div className="timer-overlay">
-      <div className="timer-category">{question.category}</div>
-      <div className="timer-points">${question.isDailyDouble ? '???' : question.points}</div>
+      <div className="timer-header">
+        <div className="timer-category">{question.category}</div>
+        <div className="timer-points">${question.isDailyDouble ? '???' : question.points}</div>
+      </div>
+
+      <div className="timer-question-text">{question.question}</div>
 
       <div className="timer-ring-wrap">
         <svg className="timer-svg" viewBox="0 0 120 120">
@@ -39,8 +42,6 @@ export default function TimerOverlay({ question, onDone }) {
         </svg>
         <span className="timer-number">{count}</span>
       </div>
-
-      <p className="timer-hint">Get ready…</p>
     </div>
   )
 }
