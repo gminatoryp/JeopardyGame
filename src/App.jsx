@@ -42,9 +42,11 @@ export default function App() {
   }
 
   const handleTimerDone = useCallback(() => {
-    setActiveQuestion(pendingQuestion)
-    setPendingQuestion(null)
-  }, [pendingQuestion])
+    setPendingQuestion((current) => {
+      setActiveQuestion(current)
+      return null
+    })
+  }, [])
 
   const handleScore = (teamId, delta) => {
     setTeams((prev) =>
