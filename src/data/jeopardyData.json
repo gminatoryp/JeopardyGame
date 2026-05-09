@@ -1,7 +1,7 @@
 {
   "categories": [
     {
-      "name": "Science",
+      "name": "Miracles of John",
       "questions": [
         {
           "points": 100,
@@ -41,7 +41,7 @@
       ]
     },
     {
-      "name": "History",
+      "name": "People of John",
       "questions": [
         {
           "points": 100,
@@ -81,7 +81,7 @@
       ]
     },
     {
-      "name": "Geography",
+      "name": "John General Information",
       "questions": [
         {
           "points": 100,
@@ -121,7 +121,7 @@
       ]
     },
     {
-      "name": "Pop Culture",
+      "name": "General Bible",
       "questions": [
         {
           "points": 100,
@@ -161,7 +161,7 @@
       ]
     },
     {
-      "name": "Sports",
+      "name": "IBC History",
       "questions": [
         {
           "points": 100,
