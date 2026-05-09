@@ -1,0 +1,154 @@
+.setup-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: var(--bg-base);
+  background-image:
+    radial-gradient(ellipse 70% 60% at 50% 30%, rgba(20,40,110,0.4) 0%, transparent 70%);
+}
+
+.setup-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-gold);
+  border-radius: var(--radius-lg);
+  padding: 52px 60px;
+  min-width: 440px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  box-shadow: var(--shadow-card), var(--shadow-gold), 0 0 0 1px rgba(255,255,255,0.03);
+  position: relative;
+  overflow: hidden;
+}
+
+.setup-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-gold-strong), transparent);
+}
+
+.setup-title {
+  font-size: 3.2rem;
+  font-weight: 900;
+  color: var(--gold-300);
+  text-shadow: 0 2px 0 var(--gold-500), 0 0 40px var(--gold-glow);
+  letter-spacing: 8px;
+  font-style: italic;
+}
+
+.setup-subtitle {
+  font-size: 0.7rem;
+  letter-spacing: 5px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  margin-top: -22px;
+}
+
+.setup-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.setup-label {
+  font-size: 0.65rem;
+  letter-spacing: 3px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.team-count-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.count-btn {
+  flex: 1;
+  padding: 13px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 1.3rem;
+  font-weight: 900;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.count-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-gold);
+  color: var(--text-primary);
+}
+
+.count-btn.active {
+  background: var(--bg-hover);
+  border-color: var(--gold-400);
+  color: var(--gold-300);
+  box-shadow: 0 0 0 1px var(--gold-400), var(--shadow-gold);
+}
+
+.team-names-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.team-name-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-family: inherit;
+  font-weight: 700;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.team-name-input:focus {
+  border-color: var(--gold-400);
+  box-shadow: 0 0 0 3px var(--gold-glow);
+}
+
+.team-name-input::placeholder {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.start-btn {
+  margin-top: 4px;
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(135deg, var(--gold-400) 0%, var(--gold-300) 100%);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: #0c1230;
+  font-size: 0.95rem;
+  font-weight: 900;
+  letter-spacing: 3px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+  box-shadow: 0 4px 20px rgba(212,168,67,0.3);
+}
+
+.start-btn:hover {
+  background: linear-gradient(135deg, var(--gold-300) 0%, #f5e49a 100%);
+  box-shadow: 0 6px 28px rgba(212,168,67,0.45);
+  transform: translateY(-1px);
+}
+
+.start-btn:active {
+  transform: translateY(0);
+}
