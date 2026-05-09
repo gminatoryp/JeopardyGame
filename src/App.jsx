@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import SetupScreen from './components/SetupScreen'
 import Board from './components/Board'
 import QuestionModal from './components/QuestionModal'
 import ScorePanel from './components/ScorePanel'
+import TimerOverlay from './components/TimerOverlay'
 import boardData from './data/jeopardyData.json'
 import './App.css'
 
@@ -10,7 +11,8 @@ export default function App() {
   const [gameState, setGameState] = useState('setup') // 'setup' | 'playing'
   const [teams, setTeams] = useState([])
   const [answeredCells, setAnsweredCells] = useState(new Set())
-  const [activeQuestion, setActiveQuestion] = useState(null) // { colIndex, rowIndex, question }
+  const [pendingQuestion, setPendingQuestion] = useState(null) // showing timer
+  const [activeQuestion, setActiveQuestion] = useState(null)  // showing modal
 
   const handleStart = (newTeams) => {
     setTeams(newTeams)
@@ -22,20 +24,27 @@ export default function App() {
     setGameState('setup')
     setTeams([])
     setAnsweredCells(new Set())
+    setPendingQuestion(null)
     setActiveQuestion(null)
   }
 
   const handleCellClick = (colIndex, rowIndex) => {
     const question = boardData.categories[colIndex].questions[rowIndex]
-    setActiveQuestion({
+    const enriched = {
       colIndex,
       rowIndex,
       question: {
         ...question,
         category: boardData.categories[colIndex].name,
       },
-    })
+    }
+    setPendingQuestion(enriched)
   }
+
+  const handleTimerDone = useCallback(() => {
+    setActiveQuestion(pendingQuestion)
+    setPendingQuestion(null)
+  }, [pendingQuestion])
 
   const handleScore = (teamId, delta) => {
     setTeams((prev) =>
@@ -49,10 +58,12 @@ export default function App() {
   }
 
   const handleModalClose = () => {
-    if (activeQuestion) {
-      const key = `${activeQuestion.colIndex}-${activeQuestion.rowIndex}`
+    const q = activeQuestion || pendingQuestion
+    if (q) {
+      const key = `${q.colIndex}-${q.rowIndex}`
       setAnsweredCells((prev) => new Set([...prev, key]))
     }
+    setPendingQuestion(null)
     setActiveQuestion(null)
   }
 
@@ -73,6 +84,13 @@ export default function App() {
       />
 
       <ScorePanel teams={teams} onReset={handleReset} />
+
+      {pendingQuestion && (
+        <TimerOverlay
+          question={pendingQuestion.question}
+          onDone={handleTimerDone}
+        />
+      )}
 
       {activeQuestion && (
         <QuestionModal
