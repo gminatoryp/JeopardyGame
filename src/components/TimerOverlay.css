@@ -1,19 +1,20 @@
 .timer-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 10, 0.92);
+  background: rgba(4, 6, 18, 0.93);
+  backdrop-filter: blur(6px);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   z-index: 100;
-  gap: 32px;
+  gap: 36px;
   padding: 40px 24px;
   animation: timerFadeIn 0.2s ease;
 }
 
 @keyframes timerFadeIn {
-  from { opacity: 0; transform: scale(0.97); }
+  from { opacity: 0; transform: scale(0.98); }
   to   { opacity: 1; transform: scale(1); }
 }
 
@@ -21,41 +22,40 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .timer-category {
-  font-size: clamp(0.75rem, 1.8vw, 1rem);
-  letter-spacing: 4px;
+  font-size: clamp(0.65rem, 1.6vw, 0.85rem);
+  letter-spacing: 5px;
   text-transform: uppercase;
-  color: #aac4ff;
+  color: var(--text-secondary);
   font-weight: 700;
 }
 
 .timer-points {
-  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-size: clamp(1.8rem, 4.5vw, 3rem);
   font-weight: 900;
-  color: #f0c040;
-  text-shadow: 3px 3px 0 #a06000, 0 0 30px rgba(240,192,64,0.5);
+  color: var(--gold-300);
+  text-shadow: 0 2px 0 var(--gold-500), 0 0 30px var(--gold-glow);
   font-style: italic;
   line-height: 1;
 }
 
 .timer-question-text {
-  font-size: clamp(1.2rem, 3vw, 1.9rem);
+  font-size: clamp(1.1rem, 2.6vw, 1.75rem);
   font-weight: 700;
-  color: white;
+  color: var(--text-primary);
   text-align: center;
-  line-height: 1.5;
-  max-width: 720px;
-  text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
-  padding: 0 16px;
+  line-height: 1.55;
+  max-width: 680px;
+  padding: 0 20px;
 }
 
 .timer-ring-wrap {
   position: relative;
-  width: 130px;
-  height: 130px;
+  width: 120px;
+  height: 120px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -71,25 +71,24 @@
 
 .timer-track {
   fill: none;
-  stroke: rgba(255, 255, 255, 0.1);
-  stroke-width: 8;
+  stroke: var(--border-faint);
+  stroke-width: 6;
 }
 
 .timer-progress {
   fill: none;
-  stroke: #f0c040;
-  stroke-width: 8;
+  stroke: var(--gold-400);
+  stroke-width: 6;
   stroke-linecap: round;
   transition: stroke-dashoffset 1s linear;
-  filter: drop-shadow(0 0 6px rgba(240,192,64,0.7));
+  filter: drop-shadow(0 0 5px rgba(212,168,67,0.6));
 }
 
 .timer-number {
-  font-size: 3.2rem;
+  font-size: 3rem;
   font-weight: 900;
-  color: white;
+  color: var(--text-primary);
   font-style: italic;
-  text-shadow: 0 0 20px rgba(255,255,255,0.3);
   position: relative;
   z-index: 1;
 }
