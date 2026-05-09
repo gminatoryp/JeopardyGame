@@ -7,17 +7,25 @@
   align-items: center;
   justify-content: center;
   z-index: 100;
-  gap: 20px;
+  gap: 32px;
+  padding: 40px 24px;
   animation: timerFadeIn 0.2s ease;
 }
 
 @keyframes timerFadeIn {
-  from { opacity: 0; transform: scale(0.96); }
+  from { opacity: 0; transform: scale(0.97); }
   to   { opacity: 1; transform: scale(1); }
 }
 
+.timer-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
 .timer-category {
-  font-size: clamp(0.8rem, 2vw, 1rem);
+  font-size: clamp(0.75rem, 1.8vw, 1rem);
   letter-spacing: 4px;
   text-transform: uppercase;
   color: #aac4ff;
@@ -25,7 +33,7 @@
 }
 
 .timer-points {
-  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-size: clamp(2rem, 5vw, 3.2rem);
   font-weight: 900;
   color: #f0c040;
   text-shadow: 3px 3px 0 #a06000, 0 0 30px rgba(240,192,64,0.5);
@@ -33,10 +41,21 @@
   line-height: 1;
 }
 
+.timer-question-text {
+  font-size: clamp(1.2rem, 3vw, 1.9rem);
+  font-weight: 700;
+  color: white;
+  text-align: center;
+  line-height: 1.5;
+  max-width: 720px;
+  text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
+  padding: 0 16px;
+}
+
 .timer-ring-wrap {
   position: relative;
-  width: 140px;
-  height: 140px;
+  width: 130px;
+  height: 130px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -66,19 +85,11 @@
 }
 
 .timer-number {
-  font-size: 3.5rem;
+  font-size: 3.2rem;
   font-weight: 900;
   color: white;
   font-style: italic;
   text-shadow: 0 0 20px rgba(255,255,255,0.3);
   position: relative;
   z-index: 1;
-  transition: color 0.3s;
-}
-
-.timer-hint {
-  font-size: 0.75rem;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.3);
 }
