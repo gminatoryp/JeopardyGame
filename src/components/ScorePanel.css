@@ -1,0 +1,98 @@
+.score-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border-gold);
+  gap: 12px;
+  flex-wrap: wrap;
+  position: relative;
+}
+
+.score-panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 8%; right: 8%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-gold-strong), transparent);
+}
+
+.score-teams {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.score-team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--bg-elevated);
+  border: 1px solid var(--team-color, var(--gold-400));
+  border-radius: var(--radius-md);
+  padding: 10px 20px;
+  min-width: 110px;
+  flex: 1;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.02);
+  position: relative;
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+
+.score-team::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--team-color, var(--gold-400));
+  opacity: 0.6;
+}
+
+.team-name-display {
+  font-size: clamp(0.58rem, 1.1vw, 0.75rem);
+  font-weight: 900;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--team-color, var(--gold-400));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+  opacity: 0.85;
+}
+
+.team-score-display {
+  font-size: clamp(1.3rem, 2.3vw, 1.9rem);
+  font-weight: 900;
+  color: var(--team-color, var(--gold-300));
+  font-style: italic;
+  line-height: 1.1;
+  transition: color 0.3s;
+}
+
+.team-score-display.negative {
+  color: var(--red);
+}
+
+.reset-btn {
+  padding: 9px 18px;
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.reset-btn:hover {
+  background: rgba(248, 113, 113, 0.08);
+  border-color: rgba(248, 113, 113, 0.4);
+  color: var(--red);
+}

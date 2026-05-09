@@ -1,0 +1,204 @@
+{
+  "categories": [
+    {
+      "name": "Miracles of John",
+      "questions": [
+        {
+          "points": 100,
+          "question": "This is the closest star to Earth.",
+          "answer": "What is the Sun?",
+          "isDailyDouble": false,
+          "videoUrl": ""
+        },
+        {
+          "points": 200,
+          "question": "This element has the chemical symbol 'O'.",
+          "answer": "What is Oxygen?",
+          "isDailyDouble": false,
+          "videoUrl": ""
+        },
+        {
+          "points": 400,
+          "question": "This scientist formulated the theory of general relativity.",
+          "answer": "Who is Albert Einstein?",
+          "isDailyDouble": false,
+          "videoUrl": ""
+        },
+        {
+          "points": 600,
+          "question": "This is the powerhouse of the cell.",
+          "answer": "What is the mitochondria?",
+          "isDailyDouble": true,
+          "videoUrl": ""
+        },
+        {
+          "points": 1000,
+          "question": "This fundamental force is responsible for radioactive decay.",
+          "answer": "What is the weak nuclear force?",
+          "isDailyDouble": false,
+          "videoUrl": ""
+        }
+      ]
+    },
+    {
+      "name": "People of John",
+      "questions": [
+        {
+          "points": 100,
+          "question": "This document declared American independence in 1776.",
+          "answer": "What is the Declaration of Independence?",
+          "isDailyDouble": false,
+          "videoUrl": ""
+        },
+        {
+          "points": 200,
+          "question": "This ancient wonder was located in Alexandria, Egypt.",
+          "answer": "What is the Lighthouse of Alexandria?",
+          "isDailyDouble": false,
+          "videoUrl": ""
+        },
+        {
+          "points": 400,
+          "question": "This war was fought from 1914 to 1918.",
+          "answer": "What is World War I?",
+          "isDailyDouble": false,
+          "videoUrl": ""
+        },
+        {
+          "points": 600,
+          "question": "This Roman emperor made Christianity the official religion of Rome.",
+          "answer": "Who is Constantine I?",
+          "isDailyDouble": false,
+          "videoUrl": ""
+        },
+        {
+          "points": 1000,
+          "question": "This treaty ended World War I and imposed harsh penalties on Germany.",
+          "answer": "What is the Treaty of Versailles?",
+          "isDailyDouble": false,
+          "videoUrl": ""
+        }
+      ]
+    },
+    {
+      "name": "John General Information",
+      "questions": [
+        {
+          "points": 100,
+          "question": "This is the largest continent by area.",
+          "answer": "What is Asia?",
+          "isDailyDouble": false,
+          "videoUrl": ""
+        },
+        {
+          "points": 200,
+          "question": "This river is the longest in the world.",
+          "answer": "What is the Nile?",
+          "isDailyDouble": false,
+          "videoUrl": ""
+        },
+        {
+          "points": 400,
+          "question": "This country has the most natural lakes in the world.",
+          "answer": "What is Canada?",
+          "isDailyDouble": true,
+          "videoUrl": ""
+        },
+        {
+          "points": 600,
+          "question": "This mountain range separates Europe from Asia.",
+          "answer": "What are the Ural Mountains?",
+          "isDailyDouble": false,
+          "videoUrl": ""
+        },
+        {
+          "points": 1000,
+          "question": "This small European country is completely surrounded by Italy.",
+          "answer": "What is Vatican City?",
+          "isDailyDouble": false,
+          "videoUrl": ""
+        }
+      ]
+    },
+    {
+      "name": "General Bible",
+      "questions": [
+        {
+          "points": 100,
+          "question": "This wizard school is featured in the Harry Potter series.",
+          "answer": "What is Hogwarts?",
+          "isDailyDouble": false,
+          "videoUrl": ""
+        },
+        {
+          "points": 200,
+          "question": "This streaming service produced the show 'Stranger Things'.",
+          "answer": "What is Netflix?",
+          "isDailyDouble": false,
+          "videoUrl": ""
+        },
+        {
+          "points": 400,
+          "question": "This artist released the album 'Thriller' in 1982.",
+          "answer": "Who is Michael Jackson?",
+          "isDailyDouble": false,
+          "videoUrl": ""
+        },
+        {
+          "points": 600,
+          "question": "This fictional city is home to Batman.",
+          "answer": "What is Gotham City?",
+          "isDailyDouble": false,
+          "videoUrl": ""
+        },
+        {
+          "points": 1000,
+          "question": "This Pixar film features a rat who dreams of becoming a chef in Paris.",
+          "answer": "What is Ratatouille?",
+          "isDailyDouble": false,
+          "videoUrl": ""
+        }
+      ]
+    },
+    {
+      "name": "IBC History",
+      "questions": [
+        {
+          "points": 100,
+          "question": "This sport is played at Wimbledon.",
+          "answer": "What is tennis?",
+          "isDailyDouble": false,
+          "videoUrl": ""
+        },
+        {
+          "points": 200,
+          "question": "This country has won the most FIFA World Cup titles.",
+          "answer": "What is Brazil?",
+          "isDailyDouble": false,
+          "videoUrl": ""
+        },
+        {
+          "points": 400,
+          "question": "This athlete holds the record for most Olympic gold medals.",
+          "answer": "Who is Michael Phelps?",
+          "isDailyDouble": false,
+          "videoUrl": ""
+        },
+        {
+          "points": 600,
+          "question": "This game is played on a court and involves dunking through a hoop.",
+          "answer": "What is basketball?",
+          "isDailyDouble": true,
+          "videoUrl": ""
+        },
+        {
+          "points": 1000,
+          "question": "This is the only Grand Slam tennis tournament played on clay.",
+          "answer": "What is the French Open (Roland Garros)?",
+          "isDailyDouble": false,
+          "videoUrl": ""
+        }
+      ]
+    }
+  ]
+}
