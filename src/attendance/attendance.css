@@ -1,0 +1,378 @@
+/* ── Base / reset ── */
+.att-login-wrap,
+.att-checkin-wrap,
+.att-dashboard {
+  min-height: 100vh;
+  background: #f0f4f8;
+  font-family: system-ui, -apple-system, sans-serif;
+  color: #1a202c;
+}
+
+/* ── Card ── */
+.att-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.10);
+  padding: 2rem;
+}
+
+/* ── Login ── */
+.att-login-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.att-login-card {
+  width: 100%;
+  max-width: 400px;
+}
+
+.att-logo {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #2b6cb0;
+  margin: 0 0 0.25rem;
+}
+
+.att-login-sub {
+  color: #718096;
+  margin: 0 0 1.5rem;
+  font-size: 0.95rem;
+}
+
+/* ── Form ── */
+.att-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.att-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #4a5568;
+  margin-top: 0.5rem;
+}
+
+.att-input {
+  padding: 0.6rem 0.85rem;
+  border: 1.5px solid #cbd5e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.att-input:focus {
+  border-color: #3182ce;
+}
+
+.att-error {
+  color: #c53030;
+  font-size: 0.875rem;
+  margin: 0.25rem 0;
+}
+
+/* ── Buttons ── */
+.att-btn {
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+.att-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.att-btn-primary {
+  background: #2b6cb0;
+  color: #fff;
+  margin-top: 0.5rem;
+}
+
+.att-btn-primary:hover:not(:disabled) {
+  background: #2c5282;
+}
+
+.att-btn-secondary {
+  background: #ebf4ff;
+  color: #2b6cb0;
+  border: 1.5px solid #bee3f8;
+}
+
+.att-btn-secondary:hover:not(:disabled) {
+  background: #bee3f8;
+}
+
+.att-btn-danger {
+  background: #fff5f5;
+  color: #c53030;
+  border: 1.5px solid #fed7d7;
+}
+
+.att-btn-danger:hover:not(:disabled) {
+  background: #fed7d7;
+}
+
+.att-btn-ghost {
+  background: transparent;
+  color: #718096;
+  font-size: 0.875rem;
+}
+
+.att-btn-ghost:hover {
+  color: #2d3748;
+}
+
+/* ── Dashboard header ── */
+.att-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  background: #2b6cb0;
+  color: #fff;
+}
+
+.att-header-title {
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: 0.02em;
+}
+
+.att-header .att-btn-ghost {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.att-header .att-btn-ghost:hover {
+  color: #fff;
+}
+
+/* ── Tabs ── */
+.att-tabs {
+  display: flex;
+  background: #fff;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.att-tab {
+  flex: 1;
+  padding: 0.85rem 1rem;
+  background: none;
+  border: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #718096;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.att-tab.active {
+  color: #2b6cb0;
+  border-bottom-color: #2b6cb0;
+}
+
+/* ── QR panel ── */
+.att-qr-panel {
+  padding: 1.5rem;
+  display: flex;
+  justify-content: center;
+}
+
+.att-qr-card {
+  max-width: 420px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.att-week-label {
+  color: #4a5568;
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+.att-qr-wrap {
+  padding: 1rem;
+  background: #fff;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.att-qr-hint {
+  color: #718096;
+  font-size: 0.875rem;
+  text-align: center;
+  margin: 0;
+}
+
+.att-qr-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+}
+
+.att-url-details {
+  width: 100%;
+  font-size: 0.8rem;
+  color: #718096;
+}
+
+.att-url-details summary {
+  cursor: pointer;
+  color: #3182ce;
+}
+
+.att-url-text {
+  word-break: break-all;
+  background: #f7fafc;
+  padding: 0.5rem;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+/* ── Records panel ── */
+.att-records-panel {
+  padding: 1.5rem;
+}
+
+.att-records-toolbar {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.att-select {
+  padding: 0.55rem 0.85rem;
+  border: 1.5px solid #cbd5e0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background: #fff;
+  cursor: pointer;
+  flex: 1;
+  min-width: 160px;
+}
+
+.att-empty {
+  text-align: center;
+  color: #a0aec0;
+  padding: 3rem 1rem;
+  font-size: 0.95rem;
+}
+
+.att-table-wrap {
+  overflow-x: auto;
+}
+
+.att-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.att-table th {
+  background: #f7fafc;
+  text-align: left;
+  padding: 0.65rem 0.85rem;
+  font-weight: 600;
+  color: #4a5568;
+  border-bottom: 2px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.att-table td {
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1px solid #edf2f7;
+  color: #2d3748;
+}
+
+.att-table tbody tr:hover {
+  background: #f7fafc;
+}
+
+/* ── Check-in page ── */
+.att-checkin-wrap {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 1.5rem 1rem;
+  min-height: 100vh;
+  background: #f0f4f8;
+}
+
+.att-checkin-card,
+.att-scanner-card {
+  width: 100%;
+  max-width: 440px;
+}
+
+.att-checkin-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #2b6cb0;
+  margin: 0 0 0.5rem;
+}
+
+/* ── Scanner ── */
+.att-scanner-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+/* ── Success ── */
+.att-success-card {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 360px;
+  width: 100%;
+}
+
+.att-success-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #c6f6d5;
+  color: #276749;
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.att-success-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #276749;
+  margin: 0;
+}
+
+.att-success-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0;
+}
