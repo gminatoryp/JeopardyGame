@@ -5,36 +5,36 @@
       "questions": [
         {
           "points": 100,
-          "question": "This is the closest star to Earth.",
-          "answer": "What is the Sun?",
+          "question": "First miracle recorded",
+          "answer": "Jesus turning water to wine John 2:1-11",
           "isDailyDouble": false,
           "videoUrl": ""
         },
         {
           "points": 200,
-          "question": "This element has the chemical symbol 'O'.",
-          "answer": "What is Oxygen?",
+          "question": "Only miracle recorded in all 4 gospels",
+          "answer": "What is feeding of the 5000",
+          "isDailyDouble": false,
+          "videoUrl": ""
+        },
+        {
+          "points": 300,
+          "question": "A miracle where someone 'helps' ",
+          "answer": "What are Water to Wine (Mary), Official, Feeding of 5000 (boy)",
           "isDailyDouble": false,
           "videoUrl": ""
         },
         {
           "points": 400,
-          "question": "This scientist formulated the theory of general relativity.",
-          "answer": "Who is Albert Einstein?",
-          "isDailyDouble": false,
-          "videoUrl": ""
-        },
-        {
-          "points": 600,
-          "question": "This is the powerhouse of the cell.",
-          "answer": "What is the mitochondria?",
+          "question": "The miracle that Jesus performs on Himself",
+          "answer": "What is walking on water (6:16-21)",
           "isDailyDouble": true,
           "videoUrl": ""
         },
         {
-          "points": 1000,
-          "question": "This fundamental force is responsible for radioactive decay.",
-          "answer": "What is the weak nuclear force?",
+          "points": 500,
+          "question": "The two miracles performed only by speaking",
+          "answer": "What are the Official's son (4:50) & Paralytic healing (5:8)",
           "isDailyDouble": false,
           "videoUrl": ""
         }
@@ -45,36 +45,36 @@
       "questions": [
         {
           "points": 100,
-          "question": "This document declared American independence in 1776.",
-          "answer": "What is the Declaration of Independence?",
+          "question": "Jesus told him he needed to be 'born again'",
+          "answer": "Who is Nicodemus (3:1-15)",
           "isDailyDouble": false,
           "videoUrl": ""
         },
         {
           "points": 200,
-          "question": "This ancient wonder was located in Alexandria, Egypt.",
-          "answer": "What is the Lighthouse of Alexandria?",
+          "question": "The first disciple called to follow Him in John",
+          "answer": "Who is Andrew (1:40)",
+          "isDailyDouble": false,
+          "videoUrl": ""
+        },
+        {
+          "points": 300,
+          "question": "The first person Jesus reveals to that He is the messiah",
+          "answer": "Who is the Samaritan woman (4:26)",
           "isDailyDouble": false,
           "videoUrl": ""
         },
         {
           "points": 400,
-          "question": "This war was fought from 1914 to 1918.",
-          "answer": "What is World War I?",
+          "question": "A reason why the woman caught in adultery is not considered Scripture",
+          "answer": "What is it is absent from earliest & best manuscripts, different locations, vocabulary, church fathers",
           "isDailyDouble": false,
           "videoUrl": ""
         },
         {
-          "points": 600,
-          "question": "This Roman emperor made Christianity the official religion of Rome.",
-          "answer": "Who is Constantine I?",
-          "isDailyDouble": false,
-          "videoUrl": ""
-        },
-        {
-          "points": 1000,
-          "question": "This treaty ended World War I and imposed harsh penalties on Germany.",
-          "answer": "What is the Treaty of Versailles?",
+          "points": 500,
+          "question": "Who said: 'He must increase, but I must decrease'",
+          "answer": "Who is John the Baptist (3:30)",
           "isDailyDouble": false,
           "videoUrl": ""
         }
@@ -85,36 +85,76 @@
       "questions": [
         {
           "points": 100,
-          "question": "This is the largest continent by area.",
-          "answer": "What is Asia?",
+          "question": "One of the themes of John",
+          "answer": "What is the diety of Christ (20:31)",
           "isDailyDouble": false,
           "videoUrl": ""
         },
         {
           "points": 200,
-          "question": "This river is the longest in the world.",
-          "answer": "What is the Nile?",
+          "question": "The main theme of John",
+          "answer": "What is the diety of Christ (20:31)",
+          "isDailyDouble": false,
+          "videoUrl": ""
+        },
+        {
+          "points": 300,
+          "question": "The number of 'I AM' statements in John",
+          "answer": "What are 7 (bread, light, door, good shepherd, resurrection, way/truth/life, vine)",
+          "isDailyDouble": true,
+          "videoUrl": ""
+        },
+        {
+          "points": 400,
+          "question": "The most frequently mentioned region in John 1 to 8",
+          "answer": "What is Galilee (1:42;2:1,11;4:3;4:43,45-47,54; 6:1; 7:1,9,41,52)",
+          "isDailyDouble": false,
+          "videoUrl": ""
+        },
+        {
+          "points": 500,
+          "question": "The most common term people call Jesus in John 1 to 8",
+          "answer": "What is 'Rabbi' (1:38,49;3:2,4:31;6:25)",
+          "isDailyDouble": false,
+          "videoUrl": ""
+        }
+      ]
+    },
+    {
+      "name": "Theology in John",
+      "questions": [
+        {
+          "points": 100,
+          "question": "John 3:16 says God so loved this — the object of his redemptive love — that he gave his only Son.",
+          "answer": "What is the world?",
+          "isDailyDouble": false,
+          "videoUrl": ""
+        },
+        {
+          "points": 200,
+          "question": "John 1:14 says the Word became this — the theological term for God taking on human nature — and dwelt among us.",
+          "answer": "What is flesh (the incarnation)?",
+          "isDailyDouble": false,
+          "videoUrl": ""
+        },
+        {
+          "points": 300,
+          "question": "In John 6:44 Jesus states that no one can come to him unless the Father does this first — one of the strongest statements of divine initiative in salvation in the entire Gospel.",
+          "answer": "What is draws him (drags him)?",
           "isDailyDouble": false,
           "videoUrl": ""
         },
         {
           "points": 400,
-          "question": "This country has the most natural lakes in the world.",
-          "answer": "What is Canada?",
+          "question": "In John 5:26 Jesus makes this theologically precise claim — that just as the Father has life in himself, he has granted the Son to have this same thing in himself.",
+          "answer": "What is life in himself (aseity / self-existence)?",
           "isDailyDouble": true,
           "videoUrl": ""
         },
         {
-          "points": 600,
-          "question": "This mountain range separates Europe from Asia.",
-          "answer": "What are the Ural Mountains?",
-          "isDailyDouble": false,
-          "videoUrl": ""
-        },
-        {
-          "points": 1000,
-          "question": "This small European country is completely surrounded by Italy.",
-          "answer": "What is Vatican City?",
+          "points": 500,
+          "question": "In John 8:58 Jesus uses the present tense 'I AM' against the aorist 'Abraham was born' — a grammatical contrast deliberately echoing this specific Old Testament passage where God reveals his personal name.",
+          "answer": "What is Exodus 3:14?",
           "isDailyDouble": false,
           "videoUrl": ""
         }
@@ -138,21 +178,21 @@
           "videoUrl": ""
         },
         {
-          "points": 400,
+          "points": 300,
           "question": "This artist released the album 'Thriller' in 1982.",
           "answer": "Who is Michael Jackson?",
           "isDailyDouble": false,
           "videoUrl": ""
         },
         {
-          "points": 600,
+          "points": 400,
           "question": "This fictional city is home to Batman.",
           "answer": "What is Gotham City?",
           "isDailyDouble": false,
           "videoUrl": ""
         },
         {
-          "points": 1000,
+          "points": 500,
           "question": "This Pixar film features a rat who dreams of becoming a chef in Paris.",
           "answer": "What is Ratatouille?",
           "isDailyDouble": false,
@@ -165,36 +205,36 @@
       "questions": [
         {
           "points": 100,
-          "question": "This sport is played at Wimbledon.",
-          "answer": "What is tennis?",
+          "question": "How many years IBC has existed",
+          "answer": "What is 30",
           "isDailyDouble": false,
           "videoUrl": ""
         },
         {
           "points": 200,
-          "question": "This country has won the most FIFA World Cup titles.",
-          "answer": "What is Brazil?",
+          "question": "All the seminaries our pastors graduated from",
+          "answer": "What is one (Master's seminary)",
+          "isDailyDouble": false,
+          "videoUrl": ""
+        },
+        {
+          "points": 300,
+          "question": "The number of locations IBC has been at",
+          "answer": "What are 6 (New door. Red cross. Pacific. WLA. Adventist. VKCPC)",
           "isDailyDouble": false,
           "videoUrl": ""
         },
         {
           "points": 400,
-          "question": "This athlete holds the record for most Olympic gold medals.",
-          "answer": "Who is Michael Phelps?",
-          "isDailyDouble": false,
-          "videoUrl": ""
-        },
-        {
-          "points": 600,
-          "question": "This game is played on a court and involves dunking through a hoop.",
-          "answer": "What is basketball?",
+          "question": "The total number of missionaries IBC supports.",
+          "answer": "What are two: Ray Kwan. Hal & Amy",
           "isDailyDouble": true,
           "videoUrl": ""
         },
         {
-          "points": 1000,
-          "question": "This is the only Grand Slam tennis tournament played on clay.",
-          "answer": "What is the French Open (Roland Garros)?",
+          "points": 500,
+          "question": "Someone who has taught at IBC that held a doctorate",
+          "answer": "Who is Nam Park, Doug Bookman, Bruce Ware, Donal Whitney. Stuart Scott",
           "isDailyDouble": false,
           "videoUrl": ""
         }
