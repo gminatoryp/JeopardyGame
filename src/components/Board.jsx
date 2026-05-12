@@ -1,6 +1,6 @@
 import './Board.css'
 
-const POINT_VALUES = [100, 200, 400, 600, 1000]
+const POINT_VALUES = [100, 200, 300, 400, 500]
 
 export default function Board({ categories, answeredCells, onCellClick }) {
   return (
