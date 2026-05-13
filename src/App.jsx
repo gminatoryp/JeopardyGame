@@ -57,7 +57,11 @@ export default function App() {
         category: boardData.categories[colIndex].name,
       },
     }
-    setPendingQuestion(enriched)
+    if (dailyDoubleKeys.has(key)) {
+      setActiveQuestion(enriched)
+    } else {
+      setPendingQuestion(enriched)
+    }
   }
 
   const handleTimerDone = useCallback(() => {
