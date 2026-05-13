@@ -13,13 +13,11 @@ export default function Board({ categories, answeredCells, onCellClick }) {
           {POINT_VALUES.map((points, rowIndex) => {
             const cellKey = `${colIndex}-${rowIndex}`
             const isAnswered = answeredCells.has(cellKey)
-            const question = category.questions[rowIndex]
-            const isDailyDouble = question?.isDailyDouble
 
             return (
               <button
                 key={rowIndex}
-                className={`cell ${isAnswered ? 'answered' : ''} ${isDailyDouble && !isAnswered ? 'daily-double-cell' : ''}`}
+                className={`cell ${isAnswered ? 'answered' : ''}`}
                 onClick={() => !isAnswered && onCellClick(colIndex, rowIndex)}
                 disabled={isAnswered}
               >

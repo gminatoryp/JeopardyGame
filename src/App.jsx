@@ -13,10 +13,26 @@ export default function App() {
   const [answeredCells, setAnsweredCells] = useState(new Set())
   const [pendingQuestion, setPendingQuestion] = useState(null) // showing timer
   const [activeQuestion, setActiveQuestion] = useState(null)  // showing modal
+  const [dailyDoubleKeys, setDailyDoubleKeys] = useState(new Set())
+
+  const generateDailyDoubles = () => {
+    const numCols = boardData.categories.length
+    const numRows = boardData.categories[0].questions.length
+    const all = []
+    for (let c = 0; c < numCols; c++)
+      for (let r = 0; r < numRows; r++)
+        all.push(`${c}-${r}`)
+    for (let i = all.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [all[i], all[j]] = [all[j], all[i]]
+    }
+    return new Set(all.slice(0, 2))
+  }
 
   const handleStart = (newTeams) => {
     setTeams(newTeams)
     setAnsweredCells(new Set())
+    setDailyDoubleKeys(generateDailyDoubles())
     setGameState('playing')
   }
 
@@ -24,17 +40,20 @@ export default function App() {
     setGameState('setup')
     setTeams([])
     setAnsweredCells(new Set())
+    setDailyDoubleKeys(new Set())
     setPendingQuestion(null)
     setActiveQuestion(null)
   }
 
   const handleCellClick = (colIndex, rowIndex) => {
     const question = boardData.categories[colIndex].questions[rowIndex]
+    const key = `${colIndex}-${rowIndex}`
     const enriched = {
       colIndex,
       rowIndex,
       question: {
         ...question,
+        isDailyDouble: dailyDoubleKeys.has(key),
         category: boardData.categories[colIndex].name,
       },
     }
