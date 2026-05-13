@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { decodeToken, isTokenValid, formatWeekLabel } from './tokenUtils';
-import { hasCheckedIn, addRecord } from './storage';
+import { hasCheckedIn, addRecord, findMember, getMembers } from './storage';
 
 function getTokenFromUrl() {
-  const hash = window.location.hash; // e.g. #/checkin?token=...
+  const hash = window.location.hash;
   const qIndex = hash.indexOf('?');
   if (qIndex === -1) return null;
   const params = new URLSearchParams(hash.slice(qIndex + 1));
@@ -12,7 +12,7 @@ function getTokenFromUrl() {
   return encoded ? decodeToken(encoded) : null;
 }
 
-// --- Camera scanner sub-component ---
+// --- Camera scanner ---
 function QRScanner({ onResult }) {
   const scannerRef = useRef(null);
   const [error, setError] = useState('');
@@ -25,10 +25,8 @@ function QRScanner({ onResult }) {
       .start(
         { facingMode: 'environment' },
         { fps: 10, qrbox: { width: 250, height: 250 } },
-        (decodedText) => {
-          onResult(decodedText);
-        },
-        () => {} // suppress per-frame errors
+        (decodedText) => onResult(decodedText),
+        () => {}
       )
       .catch(() => {
         setError('Camera access denied or not available. Please allow camera permissions.');
@@ -43,28 +41,39 @@ function QRScanner({ onResult }) {
     <div className="att-scanner-wrap">
       <div id="att-qr-reader" style={{ width: '100%' }} />
       {error && <p className="att-error">{error}</p>}
-      <p className="att-qr-hint">Point your camera at the QR code on the screen</p>
+      <p className="att-qr-hint">Point your camera at the QR code displayed by your instructor</p>
     </div>
   );
 }
 
-// --- Check-in form sub-component ---
+// --- Check-in form ---
 function CheckinForm({ token, onSuccess }) {
-  const [name, setName] = useState('');
-  const [userId, setUserId] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  const noMembers = getMembers().length === 0;
 
   function handleSubmit(e) {
     e.preventDefault();
     setError('');
 
-    if (!name.trim() || !userId.trim()) {
+    if (!firstName.trim() || !lastName.trim() || !email.trim()) {
       setError('Please fill in all fields.');
       return;
     }
 
-    if (hasCheckedIn(token.sessionId, userId.trim())) {
+    // Verify member exists in the list
+    const member = findMember(firstName, lastName, email);
+    if (!member) {
+      setError('Your name and email were not found in the member list. Please contact your instructor.');
+      return;
+    }
+
+    // Prevent duplicate check-ins
+    if (hasCheckedIn(token.sessionId, email)) {
       setError('You have already checked in for this week.');
       return;
     }
@@ -73,46 +82,59 @@ function CheckinForm({ token, onSuccess }) {
     addRecord({
       sessionId: token.sessionId,
       weekStart: token.weekStart,
-      name: name.trim(),
-      userId: userId.trim(),
+      firstName: member.firstName,
+      lastName: member.lastName,
+      email: member.email,
       timestamp: Date.now(),
     });
-    onSuccess({ name: name.trim(), weekStart: token.weekStart });
+    onSuccess({ firstName: member.firstName, lastName: member.lastName, weekStart: token.weekStart });
   }
 
   return (
     <div className="att-card att-checkin-card">
       <h2 className="att-checkin-title">Check In</h2>
       <p className="att-week-label">Week of {formatWeekLabel(token.weekStart)}</p>
-      <form onSubmit={handleSubmit} className="att-form">
-        <label className="att-label">Full Name</label>
-        <input
-          className="att-input"
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Jane Smith"
-          autoFocus
-          required
-        />
-        <label className="att-label">Student ID</label>
-        <input
-          className="att-input"
-          type="text"
-          value={userId}
-          onChange={(e) => setUserId(e.target.value)}
-          placeholder="e.g. S123456"
-          required
-        />
-        {error && <p className="att-error">{error}</p>}
-        <button
-          className="att-btn att-btn-primary"
-          type="submit"
-          disabled={submitting}
-        >
-          {submitting ? 'Submitting…' : 'Submit Attendance'}
-        </button>
-      </form>
+
+      {noMembers ? (
+        <p className="att-error" style={{ marginTop: '1rem' }}>
+          No member list has been set up yet. Please contact your instructor.
+        </p>
+      ) : (
+        <form onSubmit={handleSubmit} className="att-form">
+          <label className="att-label">First Name</label>
+          <input
+            className="att-input"
+            type="text"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            placeholder="Jane"
+            autoFocus
+            required
+          />
+          <label className="att-label">Last Name</label>
+          <input
+            className="att-input"
+            type="text"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            placeholder="Smith"
+            required
+          />
+          <label className="att-label">Email Address</label>
+          <input
+            className="att-input"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="jane.smith@example.com"
+            required
+          />
+          {error && <p className="att-error">{error}</p>}
+          <button className="att-btn att-btn-primary" type="submit" disabled={submitting}>
+            {submitting ? 'Submitting…' : 'Submit Attendance'}
+          </button>
+        </form>
+      )}
     </div>
   );
 }
@@ -123,7 +145,7 @@ function SuccessScreen({ info }) {
     <div className="att-card att-success-card">
       <div className="att-success-icon">✓</div>
       <h2 className="att-success-title">Attendance Recorded!</h2>
-      <p className="att-success-name">{info.name}</p>
+      <p className="att-success-name">{info.firstName} {info.lastName}</p>
       <p className="att-week-label">Week of {formatWeekLabel(info.weekStart)}</p>
     </div>
   );
@@ -140,7 +162,6 @@ export default function CheckinPage() {
   const tokenValid = token && isTokenValid(token);
 
   function handleScanResult(text) {
-    // Extract token param from scanned URL
     try {
       const url = new URL(text);
       const hash = url.hash;
@@ -158,7 +179,6 @@ export default function CheckinPage() {
         }
       }
     } catch {
-      // not a URL, try direct decode
       const decoded = decodeToken(text);
       if (decoded && isTokenValid(decoded)) {
         setScannedToken(decoded);
@@ -193,10 +213,7 @@ export default function CheckinPage() {
           {scanError && <p className="att-error">{scanError}</p>}
         </div>
       )}
-
-      {tokenValid && (
-        <CheckinForm token={token} onSuccess={setSuccess} />
-      )}
+      {tokenValid && <CheckinForm token={token} onSuccess={setSuccess} />}
     </div>
   );
 }
