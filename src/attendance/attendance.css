@@ -538,3 +538,108 @@
   padding: 3rem 1rem;
   font-size: 0.95rem;
 }
+
+/* ── Attendance dashboard matrix ── */
+.att-dashboard-panel {
+  padding: 1.5rem;
+}
+
+.att-matrix-table {
+  min-width: 100%;
+  white-space: nowrap;
+}
+
+.att-name-th {
+  min-width: 180px;
+  position: sticky;
+  left: 0;
+  background: #f7fafc;
+  z-index: 1;
+}
+
+.att-week-th {
+  min-width: 110px;
+  text-align: center;
+  font-size: 0.8rem;
+}
+
+.att-total-th {
+  min-width: 70px;
+  text-align: center;
+}
+
+.att-name-cell {
+  position: sticky;
+  left: 0;
+  background: #fff;
+  z-index: 1;
+  min-width: 180px;
+}
+
+.att-matrix-table tbody tr:hover .att-name-cell {
+  background: #f7fafc;
+}
+
+.att-member-name {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #2d3748;
+}
+
+.att-member-email {
+  font-size: 0.75rem;
+  color: #a0aec0;
+}
+
+.att-check-cell {
+  text-align: center;
+  padding: 0.5rem;
+}
+
+.att-check-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.att-check {
+  color: #276749;
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.att-check-time {
+  font-size: 0.7rem;
+  color: #48bb78;
+  font-weight: 500;
+}
+
+.att-absent {
+  color: #e2e8f0;
+  font-size: 1rem;
+}
+
+.att-total-cell {
+  text-align: center;
+  font-size: 0.875rem;
+}
+
+.att-total-perfect {
+  color: #276749;
+  font-weight: 700;
+}
+
+.att-total-partial {
+  color: #4a5568;
+  font-weight: 600;
+}
+
+.att-summary-row td {
+  background: #f7fafc;
+  border-top: 2px solid #e2e8f0;
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 0.65rem 0.5rem;
+}
