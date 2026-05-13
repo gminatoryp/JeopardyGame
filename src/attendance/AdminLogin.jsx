@@ -37,7 +37,9 @@ export default function AdminLogin({ onLogin }) {
   const [resetSent, setResetSent] = useState(false);
 
   useEffect(() => {
-    hasAnyUsers().then((exists) => setMode(exists ? 'login' : 'firstSetup'));
+    hasAnyUsers()
+      .then((exists) => setMode(exists ? 'login' : 'firstSetup'))
+      .catch(() => setMode('login'));
   }, []);
 
   function switchMode(next) {
