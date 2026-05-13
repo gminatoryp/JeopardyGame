@@ -643,3 +643,169 @@
   text-align: center;
   padding: 0.65rem 0.5rem;
 }
+
+/* ── Settings tab ── */
+.att-settings-panel {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.att-settings-card {
+  padding: 1.25rem 1.5rem;
+}
+
+.att-settings-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.att-settings-desc {
+  font-size: 0.875rem;
+  color: #718096;
+  margin: 0.25rem 0 0;
+  line-height: 1.5;
+}
+
+/* Toggle button */
+.att-toggle {
+  flex-shrink: 0;
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  border: none;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  transition: background 0.2s;
+}
+
+.att-toggle.on {
+  background: #276749;
+  color: #fff;
+}
+
+.att-toggle.off {
+  background: #e2e8f0;
+  color: #718096;
+}
+
+/* Geo actions */
+.att-geo-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.att-manual-coords {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.att-coord-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.att-coord-row > div {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.att-coords-display {
+  margin-top: 1rem;
+  padding: 0.6rem 0.85rem;
+  background: #f7fafc;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.att-coords-label {
+  color: #718096;
+  font-weight: 500;
+}
+
+.att-coords-value {
+  font-family: monospace;
+  color: #2d3748;
+}
+
+.att-coords-link {
+  color: #3182ce;
+  font-size: 0.8rem;
+  text-decoration: none;
+  margin-left: auto;
+}
+
+.att-coords-link:hover {
+  text-decoration: underline;
+}
+
+/* Radius selector */
+.att-radius-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+}
+
+.att-radius-btn {
+  padding: 0.45rem 1rem;
+  border-radius: 8px;
+  border: 1.5px solid #cbd5e0;
+  background: #fff;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #4a5568;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.att-radius-btn.active {
+  background: #ebf4ff;
+  border-color: #3182ce;
+  color: #2b6cb0;
+  font-weight: 700;
+}
+
+/* Geo status on check-in page */
+.att-geo-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #2b6cb0;
+  background: #ebf4ff;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+}
+
+@keyframes att-spin {
+  to { transform: rotate(360deg); }
+}
+
+.att-geo-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #bee3f8;
+  border-top-color: #2b6cb0;
+  border-radius: 50%;
+  animation: att-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}

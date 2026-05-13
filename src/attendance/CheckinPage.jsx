@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { decodeToken, isTokenValid, formatWeekLabel } from './tokenUtils';
-import { hasCheckedIn, addRecord, findMember, getMembers, getCurrentToken } from './storage';
+import { hasCheckedIn, addRecord, findMember, getMembers, getCurrentToken, getGeofenceConfig } from './storage';
+import { getCurrentPosition, getDistanceMiles, geoErrorMessage } from './geoUtils';
 
 function getTokenFromUrl() {
   const hash = window.location.hash;
@@ -53,6 +54,7 @@ function CheckinForm({ token, onSuccess }) {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [geoStatus, setGeoStatus] = useState('');
   const [noMembers, setNoMembers] = useState(false);
 
   useEffect(() => {
@@ -70,7 +72,39 @@ function CheckinForm({ token, onSuccess }) {
 
     setLoading(true);
     try {
-      // Verify the token is still the active one in Firestore
+      // ── Geofence check ──────────────────────────────────────
+      const geo = await getGeofenceConfig();
+      if (geo.enabled) {
+        if (!geo.lat || !geo.lon) {
+          setError('Location check is enabled but the church location has not been set. Please contact your instructor.');
+          setLoading(false);
+          return;
+        }
+        setGeoStatus('Checking your location…');
+        let position;
+        try {
+          position = await getCurrentPosition();
+        } catch (geoErr) {
+          setGeoStatus('');
+          setError(geoErrorMessage(geoErr));
+          setLoading(false);
+          return;
+        }
+        const { latitude, longitude } = position.coords;
+        const distMiles = getDistanceMiles(latitude, longitude, geo.lat, geo.lon);
+        setGeoStatus('');
+        if (distMiles > geo.radiusMiles) {
+          const feet = Math.round(distMiles * 5280);
+          const limit = Math.round(geo.radiusMiles * 5280);
+          setError(
+            `You must be at the church to check in. You are approximately ${feet > 5280 ? `${(distMiles).toFixed(1)} miles` : `${feet} ft`} away (limit: ${limit} ft).`
+          );
+          setLoading(false);
+          return;
+        }
+      }
+
+      // ── Token still active? ─────────────────────────────────
       const current = await getCurrentToken();
       if (!current || current.sessionId !== token.sessionId) {
         setError('This QR code is no longer active. Please scan the current one.');
@@ -78,17 +112,15 @@ function CheckinForm({ token, onSuccess }) {
         return;
       }
 
-      // Check membership
+      // ── Membership check ────────────────────────────────────
       const member = await findMember(firstName, lastName, email);
       if (!member) {
-        setError(
-          'Your name and email were not found in the member list. Please contact your instructor.'
-        );
+        setError('Your name and email were not found in the member list. Please contact your instructor.');
         setLoading(false);
         return;
       }
 
-      // Check duplicate
+      // ── Duplicate check ─────────────────────────────────────
       const alreadyIn = await hasCheckedIn(token.sessionId, email);
       if (alreadyIn) {
         setError('You have already checked in for this week.');
@@ -96,7 +128,7 @@ function CheckinForm({ token, onSuccess }) {
         return;
       }
 
-      // Record check-in
+      // ── Record check-in ─────────────────────────────────────
       await addRecord({
         sessionId: token.sessionId,
         weekStart: token.weekStart,
@@ -110,6 +142,7 @@ function CheckinForm({ token, onSuccess }) {
     } catch {
       setError('Something went wrong. Please check your connection and try again.');
     }
+    setGeoStatus('');
     setLoading(false);
   }
 
@@ -152,9 +185,14 @@ function CheckinForm({ token, onSuccess }) {
             placeholder="jane.smith@example.com"
             required
           />
+          {geoStatus && (
+            <p className="att-geo-status">
+              <span className="att-geo-spinner" /> {geoStatus}
+            </p>
+          )}
           {error && <p className="att-error">{error}</p>}
           <button className="att-btn att-btn-primary" type="submit" disabled={loading}>
-            {loading ? 'Submitting…' : 'Submit Attendance'}
+            {loading ? 'Verifying…' : 'Submit Attendance'}
           </button>
         </form>
       )}

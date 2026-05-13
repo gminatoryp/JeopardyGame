@@ -3,6 +3,7 @@ import { signOut } from 'firebase/auth';
 import { QRCodeSVG } from 'qrcode.react';
 import { auth } from './firebase';
 import { generateToken, isTokenValid, encodeToken, formatWeekLabel } from './tokenUtils';
+import { getCurrentPosition, geoErrorMessage } from './geoUtils';
 import {
   getCurrentToken,
   saveCurrentToken,
@@ -15,12 +16,226 @@ import {
   clearAllMembers,
   bulkAddMembers,
   parseMembersCSV,
+  getGeofenceConfig,
+  saveGeofenceConfig,
 } from './storage';
 
 const BASE_URL = `${window.location.origin}${import.meta.env.BASE_URL}`;
 
 function buildCheckinUrl(token) {
   return `${BASE_URL}#/checkin?token=${encodeURIComponent(encodeToken(token))}`;
+}
+
+// ── Settings tab ─────────────────────────────────────────────
+function SettingsTab() {
+  const [config, setConfig] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [locating, setLocating] = useState(false);
+  const [saveMsg, setSaveMsg] = useState('');
+  const [locError, setLocError] = useState('');
+  const [manualLat, setManualLat] = useState('');
+  const [manualLon, setManualLon] = useState('');
+  const [showManual, setShowManual] = useState(false);
+
+  useEffect(() => {
+    getGeofenceConfig().then((c) => {
+      setConfig(c);
+      setManualLat(c.lat ?? '');
+      setManualLon(c.lon ?? '');
+      setLoading(false);
+    });
+  }, []);
+
+  async function handleToggle() {
+    const updated = { ...config, enabled: !config.enabled };
+    setConfig(updated);
+    await saveGeofenceConfig(updated);
+    setSaveMsg(updated.enabled ? 'Geofencing enabled.' : 'Geofencing disabled.');
+    setTimeout(() => setSaveMsg(''), 3000);
+  }
+
+  async function handleUseMyLocation() {
+    setLocating(true);
+    setLocError('');
+    try {
+      const pos = await getCurrentPosition();
+      const { latitude, longitude } = pos.coords;
+      const updated = {
+        ...config,
+        lat: parseFloat(latitude.toFixed(6)),
+        lon: parseFloat(longitude.toFixed(6)),
+      };
+      setConfig(updated);
+      setManualLat(updated.lat);
+      setManualLon(updated.lon);
+      await saveGeofenceConfig(updated);
+      setSaveMsg('Location saved — this device\'s current position is now the check-in center.');
+      setTimeout(() => setSaveMsg(''), 4000);
+    } catch (err) {
+      setLocError(geoErrorMessage(err));
+    }
+    setLocating(false);
+  }
+
+  async function handleManualSave() {
+    const lat = parseFloat(manualLat);
+    const lon = parseFloat(manualLon);
+    if (isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+      setLocError('Please enter valid coordinates. Latitude: -90 to 90, Longitude: -180 to 180.');
+      return;
+    }
+    setLocError('');
+    setSaving(true);
+    const updated = { ...config, lat, lon };
+    setConfig(updated);
+    await saveGeofenceConfig(updated);
+    setSaveMsg('Coordinates saved.');
+    setTimeout(() => setSaveMsg(''), 3000);
+    setSaving(false);
+  }
+
+  async function handleRadiusChange(val) {
+    const updated = { ...config, radiusMiles: parseFloat(val) };
+    setConfig(updated);
+    await saveGeofenceConfig(updated);
+  }
+
+  if (loading) return <div className="att-loading">Loading settings…</div>;
+
+  const hasLocation = config.lat != null && config.lon != null;
+
+  return (
+    <div className="att-settings-panel">
+
+      {/* Geofencing toggle */}
+      <div className="att-card att-settings-card">
+        <div className="att-settings-row">
+          <div>
+            <h3 className="att-section-title" style={{ margin: 0 }}>Location Check-in (Geofencing)</h3>
+            <p className="att-settings-desc">
+              When enabled, members must be within the set radius of your church to check in.
+            </p>
+          </div>
+          <button
+            className={`att-toggle ${config.enabled ? 'on' : 'off'}`}
+            onClick={handleToggle}
+            title={config.enabled ? 'Click to disable' : 'Click to enable'}
+          >
+            {config.enabled ? 'ON' : 'OFF'}
+          </button>
+        </div>
+
+        {config.enabled && !hasLocation && (
+          <div className="att-warn-banner" style={{ marginTop: '1rem' }}>
+            ⚠ Geofencing is on but no location is set. Set a location below or members will be blocked from checking in.
+          </div>
+        )}
+      </div>
+
+      {/* Location setup */}
+      <div className="att-card att-settings-card">
+        <h3 className="att-section-title">Church Location</h3>
+        <p className="att-settings-desc">
+          Go to your church, then click the button below to save your exact GPS coordinates.
+        </p>
+
+        <div className="att-geo-actions">
+          <button
+            className="att-btn att-btn-primary"
+            onClick={handleUseMyLocation}
+            disabled={locating}
+          >
+            {locating ? 'Getting location…' : '📍 Set to My Current Location'}
+          </button>
+          <button
+            className="att-text-btn"
+            onClick={() => setShowManual((v) => !v)}
+          >
+            {showManual ? 'Hide manual entry' : 'Enter coordinates manually'}
+          </button>
+        </div>
+
+        {showManual && (
+          <div className="att-manual-coords">
+            <div className="att-coord-row">
+              <div>
+                <label className="att-label">Latitude</label>
+                <input
+                  className="att-input"
+                  type="number"
+                  step="any"
+                  placeholder="e.g. 34.2285"
+                  value={manualLat}
+                  onChange={(e) => setManualLat(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="att-label">Longitude</label>
+                <input
+                  className="att-input"
+                  type="number"
+                  step="any"
+                  placeholder="e.g. -118.4785"
+                  value={manualLon}
+                  onChange={(e) => setManualLon(e.target.value)}
+                />
+              </div>
+            </div>
+            <button
+              className="att-btn att-btn-secondary"
+              onClick={handleManualSave}
+              disabled={saving}
+            >
+              {saving ? 'Saving…' : 'Save Coordinates'}
+            </button>
+          </div>
+        )}
+
+        {locError && <p className="att-error" style={{ marginTop: '0.75rem' }}>{locError}</p>}
+        {saveMsg && <p className="att-success-msg" style={{ marginTop: '0.75rem' }}>{saveMsg}</p>}
+
+        {hasLocation && (
+          <div className="att-coords-display">
+            <span className="att-coords-label">Current location:</span>
+            <span className="att-coords-value">{config.lat}, {config.lon}</span>
+            <a
+              className="att-coords-link"
+              href={`https://www.google.com/maps?q=${config.lat},${config.lon}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              View on map ↗
+            </a>
+          </div>
+        )}
+      </div>
+
+      {/* Radius */}
+      <div className="att-card att-settings-card">
+        <h3 className="att-section-title">Check-in Radius</h3>
+        <p className="att-settings-desc">
+          Members must be within this distance to check in.
+        </p>
+        <div className="att-radius-row">
+          {[0.1, 0.25, 0.5, 1].map((r) => (
+            <button
+              key={r}
+              className={`att-radius-btn ${config.radiusMiles === r ? 'active' : ''}`}
+              onClick={() => handleRadiusChange(r)}
+            >
+              {r === 0.1 ? '528 ft' : r === 0.25 ? '¼ mile' : r === 0.5 ? '½ mile' : '1 mile'}
+            </button>
+          ))}
+        </div>
+        <p className="att-settings-desc" style={{ marginTop: '0.5rem' }}>
+          Currently set to <strong>{config.radiusMiles === 0.5 ? '½ mile' : `${config.radiusMiles} mile${config.radiusMiles !== 1 ? 's' : ''}`}</strong>
+          {' '}({Math.round(config.radiusMiles * 5280)} feet)
+        </p>
+      </div>
+
+    </div>
+  );
 }
 
 // ── Dashboard tab ─────────────────────────────────────────────
@@ -431,6 +646,7 @@ export default function AdminDashboard({ onLogout }) {
         <button className={`att-tab ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}>Dashboard</button>
         <button className={`att-tab ${activeTab === 'members' ? 'active' : ''}`} onClick={() => setActiveTab('members')}>Members</button>
         <button className={`att-tab ${activeTab === 'records' ? 'active' : ''}`} onClick={() => setActiveTab('records')}>Records ({records.length})</button>
+        <button className={`att-tab ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}>Settings</button>
       </nav>
 
       {/* QR tab */}
@@ -475,6 +691,9 @@ export default function AdminDashboard({ onLogout }) {
       {activeTab === 'members' && (
         <MembersTab members={members} setMembers={setMembers} />
       )}
+
+      {/* Settings tab */}
+      {activeTab === 'settings' && <SettingsTab />}
 
       {/* Records tab */}
       {activeTab === 'records' && (

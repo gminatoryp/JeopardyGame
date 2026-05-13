@@ -15,8 +15,22 @@ import { db } from './firebase';
 
 // ── Firestore refs ────────────────────────────────────────────
 const TOKEN_REF = doc(db, 'tokens', 'current');
+const GEOFENCE_REF = doc(db, 'config', 'geofence');
 const MEMBERS_COL = collection(db, 'members');
 const RECORDS_COL = collection(db, 'records');
+
+// ── Geofence config ───────────────────────────────────────────
+
+export async function getGeofenceConfig() {
+  const snap = await getDoc(GEOFENCE_REF);
+  return snap.exists()
+    ? snap.data()
+    : { enabled: false, lat: null, lon: null, radiusMiles: 0.5, label: '' };
+}
+
+export async function saveGeofenceConfig(config) {
+  await setDoc(GEOFENCE_REF, config);
+}
 
 // ── Token ─────────────────────────────────────────────────────
 
