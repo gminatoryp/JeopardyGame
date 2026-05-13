@@ -1,96 +1,129 @@
-const KEY_PASSWORD = 'att_admin_password';
-const KEY_TOKEN = 'att_current_token';
-const KEY_RECORDS = 'att_records';
-const KEY_MEMBERS = 'att_members';
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  addDoc,
+  setDoc,
+  deleteDoc,
+  query,
+  where,
+  writeBatch,
+  onSnapshot,
+} from 'firebase/firestore';
+import { db } from './firebase';
 
-// --- Admin password ---
+// ── Firestore refs ────────────────────────────────────────────
+const TOKEN_REF = doc(db, 'tokens', 'current');
+const MEMBERS_COL = collection(db, 'members');
+const RECORDS_COL = collection(db, 'records');
 
-export function getStoredPasswordHash() {
-  return localStorage.getItem(KEY_PASSWORD);
+// ── Token ─────────────────────────────────────────────────────
+
+export async function getCurrentToken() {
+  const snap = await getDoc(TOKEN_REF);
+  return snap.exists() ? snap.data() : null;
 }
 
-export function setStoredPasswordHash(hash) {
-  localStorage.setItem(KEY_PASSWORD, hash);
+export async function saveCurrentToken(token) {
+  await setDoc(TOKEN_REF, token);
 }
 
-export function isFirstRun() {
-  return !localStorage.getItem(KEY_PASSWORD);
+// ── Members ───────────────────────────────────────────────────
+
+export async function getMembers() {
+  const snap = await getDocs(MEMBERS_COL);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
-// --- QR token ---
-
-export function getCurrentToken() {
-  const raw = localStorage.getItem(KEY_TOKEN);
-  return raw ? JSON.parse(raw) : null;
-}
-
-export function saveCurrentToken(token) {
-  localStorage.setItem(KEY_TOKEN, JSON.stringify(token));
-}
-
-// --- Member list ---
-
-export function getMembers() {
-  const raw = localStorage.getItem(KEY_MEMBERS);
-  return raw ? JSON.parse(raw) : [];
-}
-
-export function setMembers(members) {
-  localStorage.setItem(KEY_MEMBERS, JSON.stringify(members));
-}
-
-export function addMember(member) {
-  const members = getMembers();
-  members.push({
+export async function addMember(member) {
+  await addDoc(MEMBERS_COL, {
     firstName: member.firstName.trim(),
     lastName: member.lastName.trim(),
     email: member.email.trim().toLowerCase(),
   });
-  localStorage.setItem(KEY_MEMBERS, JSON.stringify(members));
 }
 
-export function removeMember(index) {
-  const members = getMembers();
-  members.splice(index, 1);
-  localStorage.setItem(KEY_MEMBERS, JSON.stringify(members));
+export async function removeMember(id) {
+  await deleteDoc(doc(db, 'members', id));
 }
 
-// Returns the matching member object or null
-export function findMember(firstName, lastName, email) {
-  const members = getMembers();
-  return (
-    members.find(
-      (m) =>
-        m.firstName.toLowerCase() === firstName.trim().toLowerCase() &&
-        m.lastName.toLowerCase() === lastName.trim().toLowerCase() &&
-        m.email.toLowerCase() === email.trim().toLowerCase()
-    ) || null
+export async function clearAllMembers() {
+  const snap = await getDocs(MEMBERS_COL);
+  const batch = writeBatch(db);
+  snap.docs.forEach((d) => batch.delete(d.ref));
+  await batch.commit();
+}
+
+export async function bulkAddMembers(members) {
+  // Firestore batch limit is 500 per commit
+  const chunks = [];
+  for (let i = 0; i < members.length; i += 400) {
+    chunks.push(members.slice(i, i + 400));
+  }
+  for (const chunk of chunks) {
+    const batch = writeBatch(db);
+    chunk.forEach((member) => {
+      const ref = doc(MEMBERS_COL);
+      batch.set(ref, {
+        firstName: member.firstName.trim(),
+        lastName: member.lastName.trim(),
+        email: member.email.trim().toLowerCase(),
+      });
+    });
+    await batch.commit();
+  }
+}
+
+// Match by email first (indexed), then verify first+last name
+export async function findMember(firstName, lastName, email) {
+  const q = query(MEMBERS_COL, where('email', '==', email.trim().toLowerCase()));
+  const snap = await getDocs(q);
+  const match = snap.docs.find((d) => {
+    const data = d.data();
+    return (
+      data.firstName.toLowerCase() === firstName.trim().toLowerCase() &&
+      data.lastName.toLowerCase() === lastName.trim().toLowerCase()
+    );
+  });
+  return match ? { id: match.id, ...match.data() } : null;
+}
+
+// ── Records ───────────────────────────────────────────────────
+
+export async function getRecords() {
+  const snap = await getDocs(RECORDS_COL);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+}
+
+export async function addRecord(record) {
+  await addDoc(RECORDS_COL, record);
+}
+
+export async function hasCheckedIn(sessionId, email) {
+  const q = query(
+    RECORDS_COL,
+    where('sessionId', '==', sessionId),
+    where('email', '==', email.trim().toLowerCase())
   );
+  const snap = await getDocs(q);
+  return !snap.empty;
 }
 
-// --- Attendance records ---
-
-export function getRecords() {
-  const raw = localStorage.getItem(KEY_RECORDS);
-  return raw ? JSON.parse(raw) : [];
+export async function getRecordsForSession(sessionId) {
+  const q = query(RECORDS_COL, where('sessionId', '==', sessionId));
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
-export function addRecord(record) {
-  const records = getRecords();
-  records.push(record);
-  localStorage.setItem(KEY_RECORDS, JSON.stringify(records));
+// Real-time listener — returns unsubscribe function
+export function subscribeToRecords(callback) {
+  return onSnapshot(RECORDS_COL, (snap) => {
+    callback(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+  });
 }
 
-// Duplicate check: one check-in per email per session
-export function hasCheckedIn(sessionId, email) {
-  return getRecords().some(
-    (r) => r.sessionId === sessionId && r.email.toLowerCase() === email.trim().toLowerCase()
-  );
-}
-
-export function getRecordsForSession(sessionId) {
-  return getRecords().filter((r) => r.sessionId === sessionId);
-}
+// ── CSV utilities (pure JS) ───────────────────────────────────
 
 export function exportRecordsCSV(records) {
   const header = 'First Name,Last Name,Email,Week Of,Check-in Time\n';
@@ -106,7 +139,6 @@ export function exportRecordsCSV(records) {
   return header + rows.join('\n');
 }
 
-// Parse a CSV string into member objects. Accepts with or without a header row.
 export function parseMembersCSV(text) {
   const lines = text.trim().split(/\r?\n/).filter((l) => l.trim());
   const members = [];
@@ -114,8 +146,11 @@ export function parseMembersCSV(text) {
     const parts = line.split(',').map((p) => p.replace(/^"|"$/g, '').trim());
     if (parts.length < 3) continue;
     const [firstName, lastName, email] = parts;
-    // Skip header row if present
-    if (firstName.toLowerCase() === 'first name' || firstName.toLowerCase() === 'firstname') continue;
+    if (
+      firstName.toLowerCase() === 'first name' ||
+      firstName.toLowerCase() === 'firstname'
+    )
+      continue;
     if (!email.includes('@')) continue;
     members.push({ firstName, lastName, email: email.toLowerCase() });
   }

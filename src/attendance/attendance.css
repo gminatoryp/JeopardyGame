@@ -510,3 +510,31 @@
   color: #2d3748;
   margin: 0;
 }
+
+/* ── Login footer ── */
+.att-login-footer {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.att-text-btn {
+  background: none;
+  border: none;
+  color: #3182ce;
+  font-size: 0.875rem;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.att-text-btn:hover {
+  color: #2c5282;
+}
+
+/* ── Loading state ── */
+.att-loading {
+  text-align: center;
+  color: #718096;
+  padding: 3rem 1rem;
+  font-size: 0.95rem;
+}

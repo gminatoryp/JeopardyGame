@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { decodeToken, isTokenValid, formatWeekLabel } from './tokenUtils';
-import { hasCheckedIn, addRecord, findMember, getMembers } from './storage';
+import { hasCheckedIn, addRecord, findMember, getMembers, getCurrentToken } from './storage';
 
 function getTokenFromUrl() {
   const hash = window.location.hash;
@@ -12,7 +12,7 @@ function getTokenFromUrl() {
   return encoded ? decodeToken(encoded) : null;
 }
 
-// --- Camera scanner ---
+// ── Camera QR scanner ─────────────────────────────────────────
 function QRScanner({ onResult }) {
   const scannerRef = useRef(null);
   const [error, setError] = useState('');
@@ -25,12 +25,12 @@ function QRScanner({ onResult }) {
       .start(
         { facingMode: 'environment' },
         { fps: 10, qrbox: { width: 250, height: 250 } },
-        (decodedText) => onResult(decodedText),
+        (text) => onResult(text),
         () => {}
       )
-      .catch(() => {
-        setError('Camera access denied or not available. Please allow camera permissions.');
-      });
+      .catch(() =>
+        setError('Camera access denied. Please allow camera permissions and reload.')
+      );
 
     return () => {
       scanner.isRunning() && scanner.stop().catch(() => {});
@@ -46,17 +46,20 @@ function QRScanner({ onResult }) {
   );
 }
 
-// --- Check-in form ---
+// ── Check-in form ─────────────────────────────────────────────
 function CheckinForm({ token, onSuccess }) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
-  const [submitting, setSubmitting] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [noMembers, setNoMembers] = useState(false);
 
-  const noMembers = getMembers().length === 0;
+  useEffect(() => {
+    getMembers().then((m) => setNoMembers(m.length === 0));
+  }, []);
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     setError('');
 
@@ -65,29 +68,49 @@ function CheckinForm({ token, onSuccess }) {
       return;
     }
 
-    // Verify member exists in the list
-    const member = findMember(firstName, lastName, email);
-    if (!member) {
-      setError('Your name and email were not found in the member list. Please contact your instructor.');
-      return;
-    }
+    setLoading(true);
+    try {
+      // Verify the token is still the active one in Firestore
+      const current = await getCurrentToken();
+      if (!current || current.sessionId !== token.sessionId) {
+        setError('This QR code is no longer active. Please scan the current one.');
+        setLoading(false);
+        return;
+      }
 
-    // Prevent duplicate check-ins
-    if (hasCheckedIn(token.sessionId, email)) {
-      setError('You have already checked in for this week.');
-      return;
-    }
+      // Check membership
+      const member = await findMember(firstName, lastName, email);
+      if (!member) {
+        setError(
+          'Your name and email were not found in the member list. Please contact your instructor.'
+        );
+        setLoading(false);
+        return;
+      }
 
-    setSubmitting(true);
-    addRecord({
-      sessionId: token.sessionId,
-      weekStart: token.weekStart,
-      firstName: member.firstName,
-      lastName: member.lastName,
-      email: member.email,
-      timestamp: Date.now(),
-    });
-    onSuccess({ firstName: member.firstName, lastName: member.lastName, weekStart: token.weekStart });
+      // Check duplicate
+      const alreadyIn = await hasCheckedIn(token.sessionId, email);
+      if (alreadyIn) {
+        setError('You have already checked in for this week.');
+        setLoading(false);
+        return;
+      }
+
+      // Record check-in
+      await addRecord({
+        sessionId: token.sessionId,
+        weekStart: token.weekStart,
+        firstName: member.firstName,
+        lastName: member.lastName,
+        email: member.email,
+        timestamp: Date.now(),
+      });
+
+      onSuccess({ firstName: member.firstName, lastName: member.lastName, weekStart: token.weekStart });
+    } catch {
+      setError('Something went wrong. Please check your connection and try again.');
+    }
+    setLoading(false);
   }
 
   return (
@@ -130,8 +153,8 @@ function CheckinForm({ token, onSuccess }) {
             required
           />
           {error && <p className="att-error">{error}</p>}
-          <button className="att-btn att-btn-primary" type="submit" disabled={submitting}>
-            {submitting ? 'Submitting…' : 'Submit Attendance'}
+          <button className="att-btn att-btn-primary" type="submit" disabled={loading}>
+            {loading ? 'Submitting…' : 'Submit Attendance'}
           </button>
         </form>
       )}
@@ -139,7 +162,7 @@ function CheckinForm({ token, onSuccess }) {
   );
 }
 
-// --- Success screen ---
+// ── Success screen ────────────────────────────────────────────
 function SuccessScreen({ info }) {
   return (
     <div className="att-card att-success-card">
@@ -151,7 +174,7 @@ function SuccessScreen({ info }) {
   );
 }
 
-// --- Main check-in page ---
+// ── Main check-in page ────────────────────────────────────────
 export default function CheckinPage() {
   const urlToken = getTokenFromUrl();
   const [scannedToken, setScannedToken] = useState(urlToken);
@@ -161,7 +184,7 @@ export default function CheckinPage() {
   const token = scannedToken;
   const tokenValid = token && isTokenValid(token);
 
-  function handleScanResult(text) {
+  const handleScanResult = useCallback((text) => {
     try {
       const url = new URL(text);
       const hash = url.hash;
@@ -187,7 +210,7 @@ export default function CheckinPage() {
       }
     }
     setScanError('Invalid or expired QR code. Please ask your instructor to refresh it.');
-  }
+  }, []);
 
   if (success) {
     return (
@@ -199,7 +222,7 @@ export default function CheckinPage() {
 
   return (
     <div className="att-checkin-wrap">
-      {!tokenValid && (
+      {!tokenValid ? (
         <div className="att-card att-scanner-card">
           <h2 className="att-checkin-title">Scan Attendance QR Code</h2>
           <p className="att-qr-hint">
@@ -212,8 +235,9 @@ export default function CheckinPage() {
           )}
           {scanError && <p className="att-error">{scanError}</p>}
         </div>
+      ) : (
+        <CheckinForm token={token} onSuccess={setSuccess} />
       )}
-      {tokenValid && <CheckinForm token={token} onSuccess={setSuccess} />}
     </div>
   );
 }

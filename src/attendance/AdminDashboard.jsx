@@ -1,94 +1,125 @@
 import { useState, useEffect, useRef } from 'react';
+import { signOut } from 'firebase/auth';
 import { QRCodeSVG } from 'qrcode.react';
-import {
-  generateToken,
-  isTokenValid,
-  encodeToken,
-  formatWeekLabel,
-} from './tokenUtils';
+import { auth } from './firebase';
+import { generateToken, isTokenValid, encodeToken, formatWeekLabel } from './tokenUtils';
 import {
   getCurrentToken,
   saveCurrentToken,
-  getRecords,
+  subscribeToRecords,
   getRecordsForSession,
   exportRecordsCSV,
   getMembers,
-  setMembers,
   addMember,
   removeMember,
+  clearAllMembers,
+  bulkAddMembers,
   parseMembersCSV,
 } from './storage';
 
 const BASE_URL = `${window.location.origin}${import.meta.env.BASE_URL}`;
 
 function buildCheckinUrl(token) {
-  const encoded = encodeToken(token);
-  return `${BASE_URL}#/checkin?token=${encodeURIComponent(encoded)}`;
+  return `${BASE_URL}#/checkin?token=${encodeURIComponent(encodeToken(token))}`;
 }
 
-// ── Members tab ──────────────────────────────────────────────
+// ── Members tab ───────────────────────────────────────────────
 function MembersTab() {
-  const [members, setMembersState] = useState(getMembers);
+  const [members, setMembersState] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [addError, setAddError] = useState('');
+  const [addLoading, setAddLoading] = useState(false);
   const [csvText, setCsvText] = useState('');
   const [csvError, setCsvError] = useState('');
   const [csvSuccess, setCsvSuccess] = useState('');
+  const [importLoading, setImportLoading] = useState(false);
   const [showCsvPanel, setShowCsvPanel] = useState(false);
   const fileRef = useRef(null);
 
-  function refresh() {
-    setMembersState(getMembers());
+  async function refresh() {
+    const m = await getMembers();
+    setMembersState(m);
   }
 
-  function handleAdd(e) {
+  useEffect(() => {
+    getMembers().then((m) => {
+      setMembersState(m);
+      setLoading(false);
+    });
+  }, []);
+
+  async function handleAdd(e) {
     e.preventDefault();
     setAddError('');
     if (!firstName.trim() || !lastName.trim() || !email.trim()) {
       setAddError('All fields are required.');
       return;
     }
-    if (!email.includes('@')) {
-      setAddError('Please enter a valid email.');
-      return;
-    }
-    const existing = getMembers().find(
+    const duplicate = members.find(
       (m) => m.email.toLowerCase() === email.trim().toLowerCase()
     );
-    if (existing) {
+    if (duplicate) {
       setAddError('A member with this email already exists.');
       return;
     }
-    addMember({ firstName, lastName, email });
-    setFirstName('');
-    setLastName('');
-    setEmail('');
-    refresh();
+    setAddLoading(true);
+    try {
+      await addMember({ firstName, lastName, email });
+      setFirstName('');
+      setLastName('');
+      setEmail('');
+      await refresh();
+    } catch {
+      setAddError('Failed to add member. Please try again.');
+    }
+    setAddLoading(false);
   }
 
-  function handleRemove(index) {
+  async function handleRemove(id) {
     if (!window.confirm('Remove this member?')) return;
-    removeMember(index);
-    refresh();
+    try {
+      await removeMember(id);
+      setMembersState((prev) => prev.filter((m) => m.id !== id));
+    } catch {
+      alert('Failed to remove member. Please try again.');
+    }
   }
 
-  function handleCsvImport() {
+  async function handleClearAll() {
+    if (!window.confirm(`Remove all ${members.length} members? This cannot be undone.`)) return;
+    try {
+      await clearAllMembers();
+      setMembersState([]);
+    } catch {
+      alert('Failed to clear members. Please try again.');
+    }
+  }
+
+  async function handleCsvImport() {
     setCsvError('');
     setCsvSuccess('');
     const parsed = parseMembersCSV(csvText);
     if (parsed.length === 0) {
-      setCsvError('No valid rows found. Format: First Name, Last Name, Email (one per line).');
+      setCsvError('No valid rows found. Format: First Name, Last Name, Email — one per line.');
       return;
     }
-    const existing = getMembers();
-    const existingEmails = new Set(existing.map((m) => m.email.toLowerCase()));
-    const newOnes = parsed.filter((m) => !existingEmails.has(m.email.toLowerCase()));
-    setMembers([...existing, ...newOnes]);
-    setCsvText('');
-    setCsvSuccess(`Imported ${newOnes.length} new member(s). ${parsed.length - newOnes.length} duplicate(s) skipped.`);
-    refresh();
+    setImportLoading(true);
+    try {
+      const existingEmails = new Set(members.map((m) => m.email.toLowerCase()));
+      const newOnes = parsed.filter((m) => !existingEmails.has(m.email.toLowerCase()));
+      if (newOnes.length > 0) await bulkAddMembers(newOnes);
+      await refresh();
+      setCsvText('');
+      setCsvSuccess(
+        `Imported ${newOnes.length} new member(s). ${parsed.length - newOnes.length} duplicate(s) skipped.`
+      );
+    } catch {
+      setCsvError('Import failed. Please try again.');
+    }
+    setImportLoading(false);
   }
 
   function handleFileUpload(e) {
@@ -100,14 +131,9 @@ function MembersTab() {
     e.target.value = '';
   }
 
-  function handleClearAll() {
-    if (!window.confirm(`Remove all ${members.length} members? This cannot be undone.`)) return;
-    setMembers([]);
-    refresh();
-  }
-
   function handleExportMembers() {
-    const csv = 'First Name,Last Name,Email\n' +
+    const csv =
+      'First Name,Last Name,Email\n' +
       members.map((m) => `"${m.firstName}","${m.lastName}","${m.email}"`).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -118,9 +144,10 @@ function MembersTab() {
     URL.revokeObjectURL(url);
   }
 
+  if (loading) return <div className="att-loading">Loading members…</div>;
+
   return (
     <div className="att-members-panel">
-
       {/* Add one member */}
       <div className="att-card att-members-add-card">
         <h3 className="att-section-title">Add Member</h3>
@@ -146,30 +173,26 @@ function MembersTab() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          <button className="att-btn att-btn-primary" type="submit">Add</button>
+          <button className="att-btn att-btn-primary" type="submit" disabled={addLoading}>
+            {addLoading ? '…' : 'Add'}
+          </button>
         </form>
         {addError && <p className="att-error" style={{ marginTop: '0.5rem' }}>{addError}</p>}
       </div>
 
       {/* CSV import */}
       <div className="att-card att-members-csv-card">
-        <button
-          className="att-section-toggle"
-          onClick={() => setShowCsvPanel((v) => !v)}
-        >
+        <button className="att-section-toggle" onClick={() => setShowCsvPanel((v) => !v)}>
           {showCsvPanel ? '▾' : '▸'} Import from CSV
         </button>
         {showCsvPanel && (
           <div className="att-csv-panel">
             <p className="att-csv-hint">
-              CSV format: <code>First Name, Last Name, Email</code> — one member per line.
+              Format: <code>First Name, Last Name, Email</code> — one member per line.
               A header row is optional and will be skipped automatically.
             </p>
             <div className="att-csv-actions">
-              <button
-                className="att-btn att-btn-secondary"
-                onClick={() => fileRef.current.click()}
-              >
+              <button className="att-btn att-btn-secondary" onClick={() => fileRef.current.click()}>
                 Upload CSV File
               </button>
               <input
@@ -192,9 +215,9 @@ function MembersTab() {
             <button
               className="att-btn att-btn-primary"
               onClick={handleCsvImport}
-              disabled={!csvText.trim()}
+              disabled={!csvText.trim() || importLoading}
             >
-              Import
+              {importLoading ? 'Importing…' : 'Import'}
             </button>
           </div>
         )}
@@ -202,7 +225,9 @@ function MembersTab() {
 
       {/* Member list */}
       <div className="att-members-toolbar">
-        <span className="att-members-count">{members.length} member{members.length !== 1 ? 's' : ''}</span>
+        <span className="att-members-count">
+          {members.length} member{members.length !== 1 ? 's' : ''}
+        </span>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           {members.length > 0 && (
             <>
@@ -233,7 +258,7 @@ function MembersTab() {
             </thead>
             <tbody>
               {members.map((m, i) => (
-                <tr key={i}>
+                <tr key={m.id}>
                   <td>{i + 1}</td>
                   <td>{m.firstName}</td>
                   <td>{m.lastName}</td>
@@ -241,7 +266,7 @@ function MembersTab() {
                   <td>
                     <button
                       className="att-btn-remove"
-                      onClick={() => handleRemove(i)}
+                      onClick={() => handleRemove(m.id)}
                       title="Remove member"
                     >
                       ✕
@@ -257,28 +282,38 @@ function MembersTab() {
   );
 }
 
-// ── Main dashboard ───────────────────────────────────────────
+// ── Main dashboard ────────────────────────────────────────────
 export default function AdminDashboard({ onLogout }) {
   const [token, setToken] = useState(null);
+  const [tokenLoading, setTokenLoading] = useState(true);
   const [records, setRecords] = useState([]);
   const [activeTab, setActiveTab] = useState('qr');
   const [copied, setCopied] = useState(false);
   const [filterSession, setFilterSession] = useState('all');
 
+  // Load or generate QR token
   useEffect(() => {
-    let current = getCurrentToken();
-    if (!current || !isTokenValid(current)) {
-      current = generateToken();
-      saveCurrentToken(current);
-    }
-    setToken(current);
-    setRecords(getRecords());
+    (async () => {
+      let current = await getCurrentToken();
+      if (!current || !isTokenValid(current)) {
+        current = generateToken();
+        await saveCurrentToken(current);
+      }
+      setToken(current);
+      setTokenLoading(false);
+    })();
   }, []);
 
-  function handleRegenerate() {
+  // Real-time attendance records listener
+  useEffect(() => {
+    const unsub = subscribeToRecords((recs) => setRecords(recs));
+    return unsub;
+  }, []);
+
+  async function handleRegenerate() {
     if (!window.confirm('Generate a new QR code? The current code will no longer work.')) return;
     const newToken = generateToken();
-    saveCurrentToken(newToken);
+    await saveCurrentToken(newToken);
     setToken(newToken);
   }
 
@@ -289,9 +324,9 @@ export default function AdminDashboard({ onLogout }) {
     });
   }
 
-  function handleExport() {
+  async function handleExport() {
     const toExport =
-      filterSession === 'all' ? records : getRecordsForSession(filterSession);
+      filterSession === 'all' ? records : await getRecordsForSession(filterSession);
     const csv = exportRecordsCSV(toExport);
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -302,18 +337,24 @@ export default function AdminDashboard({ onLogout }) {
     URL.revokeObjectURL(url);
   }
 
+  async function handleLogout() {
+    await signOut(auth);
+    onLogout();
+  }
+
   const sessions = [...new Set(records.map((r) => r.weekStart))].sort().reverse();
   const displayedRecords =
-    filterSession === 'all' ? records : records.filter((r) => r.weekStart === filterSession);
-
-  const checkinUrl = token ? buildCheckinUrl(token) : '';
-  const memberCount = getMembers().length;
+    filterSession === 'all'
+      ? records
+      : records.filter((r) => r.weekStart === filterSession);
 
   return (
     <div className="att-dashboard">
       <header className="att-header">
         <span className="att-header-title">Attendance Admin</span>
-        <button className="att-btn att-btn-ghost" onClick={onLogout}>Sign Out</button>
+        <button className="att-btn att-btn-ghost" onClick={handleLogout}>
+          Sign Out
+        </button>
       </header>
 
       <nav className="att-tabs">
@@ -327,46 +368,42 @@ export default function AdminDashboard({ onLogout }) {
           className={`att-tab ${activeTab === 'members' ? 'active' : ''}`}
           onClick={() => setActiveTab('members')}
         >
-          Members ({memberCount})
+          Members
         </button>
         <button
           className={`att-tab ${activeTab === 'records' ? 'active' : ''}`}
-          onClick={() => { setActiveTab('records'); setRecords(getRecords()); }}
+          onClick={() => setActiveTab('records')}
         >
           Attendance ({records.length})
         </button>
       </nav>
 
       {/* QR tab */}
-      {activeTab === 'qr' && token && (
+      {activeTab === 'qr' && (
         <div className="att-qr-panel">
-          <div className="att-card att-qr-card">
-            {memberCount === 0 && (
-              <div className="att-warn-banner">
-                ⚠ No members added yet. Add members in the <strong>Members</strong> tab before sharing this QR code.
+          {tokenLoading ? (
+            <div className="att-loading">Generating QR code…</div>
+          ) : (
+            <div className="att-card att-qr-card">
+              <p className="att-week-label">Week of {formatWeekLabel(token.weekStart)}</p>
+              <div className="att-qr-wrap">
+                <QRCodeSVG value={buildCheckinUrl(token)} size={260} level="M" includeMargin />
               </div>
-            )}
-            <p className="att-week-label">Week of {formatWeekLabel(token.weekStart)}</p>
-            <div className="att-qr-wrap">
-              <QRCodeSVG value={checkinUrl} size={260} level="M" includeMargin />
+              <p className="att-qr-hint">Students scan this code to check in</p>
+              <div className="att-qr-actions">
+                <button className="att-btn att-btn-secondary" onClick={handleCopyUrl}>
+                  {copied ? 'Copied!' : 'Copy Check-in URL'}
+                </button>
+                <button className="att-btn att-btn-danger" onClick={handleRegenerate}>
+                  Regenerate Code
+                </button>
+              </div>
+              <details className="att-url-details">
+                <summary>Show check-in URL</summary>
+                <p className="att-url-text">{buildCheckinUrl(token)}</p>
+              </details>
             </div>
-            <p className="att-qr-hint">Students scan this code to check in</p>
-            <div className="att-qr-actions">
-              <button className="att-btn att-btn-secondary" onClick={handleCopyUrl}>
-                {copied ? 'Copied!' : 'Copy Check-in URL'}
-              </button>
-              <button className="att-btn att-btn-danger" onClick={handleRegenerate}>
-                Regenerate Code
-              </button>
-            </div>
-            <details className="att-url-details">
-              <summary>Show check-in URL</summary>
-              <p className="att-url-text">{checkinUrl}</p>
-            </details>
-            {!isTokenValid(token) && (
-              <p className="att-error">This token has expired. Please regenerate.</p>
-            )}
-          </div>
+          )}
         </div>
       )}
 
@@ -384,7 +421,9 @@ export default function AdminDashboard({ onLogout }) {
             >
               <option value="all">All weeks</option>
               {sessions.map((s) => (
-                <option key={s} value={s}>Week of {formatWeekLabel(s)}</option>
+                <option key={s} value={s}>
+                  Week of {formatWeekLabel(s)}
+                </option>
               ))}
             </select>
             <button className="att-btn att-btn-secondary" onClick={handleExport}>
@@ -408,16 +447,19 @@ export default function AdminDashboard({ onLogout }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {displayedRecords.map((r, i) => (
-                    <tr key={i}>
-                      <td>{i + 1}</td>
-                      <td>{r.firstName}</td>
-                      <td>{r.lastName}</td>
-                      <td>{r.email}</td>
-                      <td>{formatWeekLabel(r.weekStart)}</td>
-                      <td>{new Date(r.timestamp).toLocaleString()}</td>
-                    </tr>
-                  ))}
+                  {displayedRecords
+                    .slice()
+                    .sort((a, b) => b.timestamp - a.timestamp)
+                    .map((r, i) => (
+                      <tr key={r.id}>
+                        <td>{i + 1}</td>
+                        <td>{r.firstName}</td>
+                        <td>{r.lastName}</td>
+                        <td>{r.email}</td>
+                        <td>{formatWeekLabel(r.weekStart)}</td>
+                        <td>{new Date(r.timestamp).toLocaleString()}</td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </div>
