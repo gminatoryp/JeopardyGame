@@ -809,3 +809,143 @@
   animation: att-spin 0.7s linear infinite;
   flex-shrink: 0;
 }
+
+/* ── Role badges ── */
+.att-role-badge {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: capitalize;
+  letter-spacing: 0.04em;
+}
+
+.att-role-admin {
+  background: #ebf4ff;
+  color: #2b6cb0;
+}
+
+.att-role-manager {
+  background: #f0fff4;
+  color: #276749;
+}
+
+.att-role-user {
+  background: #faf5ff;
+  color: #6b46c1;
+}
+
+/* ── Header left (title + role badge) ── */
+.att-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.att-header-left .att-role-badge {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+/* ── Users panel ── */
+.att-users-panel {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.att-users-add-card {
+  padding: 1.25rem 1.5rem;
+}
+
+.att-users-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.att-users-form-row {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.att-users-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+  min-width: 160px;
+}
+
+.att-users-role-field {
+  max-width: 140px;
+  min-width: 120px;
+}
+
+.att-users-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.att-role-select {
+  padding: 0.35rem 0.6rem;
+  font-size: 0.85rem;
+  flex: unset;
+  min-width: unset;
+  width: 110px;
+}
+
+.att-you-badge {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 0.1rem 0.4rem;
+  background: #edf2f7;
+  color: #718096;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+/* Role legend */
+.att-role-legend {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #edf2f7;
+  font-size: 0.85rem;
+  color: #4a5568;
+}
+
+.att-role-legend p {
+  margin: 0 0 0.5rem;
+}
+
+.att-role-legend ul {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+/* ── Forgot-password reset-sent state ── */
+.att-reset-sent {
+  background: #f0fff4;
+  border: 1px solid #c6f6d5;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  color: #276749;
+  font-size: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.att-reset-sent p {
+  margin: 0;
+}

@@ -10,6 +10,7 @@ import {
   where,
   writeBatch,
   onSnapshot,
+  limit,
 } from 'firebase/firestore';
 import { db } from './firebase';
 
@@ -18,6 +19,41 @@ const TOKEN_REF = doc(db, 'tokens', 'current');
 const GEOFENCE_REF = doc(db, 'config', 'geofence');
 const MEMBERS_COL = collection(db, 'members');
 const RECORDS_COL = collection(db, 'records');
+
+// ── Users ─────────────────────────────────────────────────────
+const USERS_COL = collection(db, 'users');
+
+export async function hasAnyUsers() {
+  const snap = await getDocs(query(USERS_COL, limit(1)));
+  return !snap.empty;
+}
+
+export async function getUserData(uid) {
+  const snap = await getDoc(doc(db, 'users', uid));
+  return snap.exists() ? snap.data() : null;
+}
+
+export async function createUserRecord(uid, email, role, createdBy) {
+  await setDoc(doc(db, 'users', uid), {
+    email,
+    role,
+    createdAt: Date.now(),
+    createdBy: createdBy ?? null,
+  });
+}
+
+export async function getAllUsers() {
+  const snap = await getDocs(USERS_COL);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+}
+
+export async function updateUserRole(uid, role) {
+  await setDoc(doc(db, 'users', uid), { role }, { merge: true });
+}
+
+export async function removeUserRecord(uid) {
+  await deleteDoc(doc(db, 'users', uid));
+}
 
 // ── Geofence config ───────────────────────────────────────────
 

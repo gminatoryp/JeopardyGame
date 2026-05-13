@@ -7,13 +7,13 @@ import './attendance.css';
 function getRoute() {
   const hash = window.location.hash;
   if (hash.startsWith('#/checkin')) return 'checkin';
-  if (hash.startsWith('#/attendance')) return 'admin';
   return 'admin';
 }
 
 export default function AttendanceApp() {
   const [route, setRoute] = useState(getRoute);
-  const [loggedIn, setLoggedIn] = useState(false);
+  const [user, setUser] = useState(null);
+  const [role, setRole] = useState(null);
 
   useEffect(() => {
     function onHashChange() {
@@ -27,10 +27,25 @@ export default function AttendanceApp() {
     return <CheckinPage />;
   }
 
-  // Admin route
-  if (!loggedIn) {
-    return <AdminLogin onLogin={() => setLoggedIn(true)} />;
+  if (!user) {
+    return (
+      <AdminLogin
+        onLogin={(u, r) => {
+          setUser(u);
+          setRole(r);
+        }}
+      />
+    );
   }
 
-  return <AdminDashboard onLogout={() => setLoggedIn(false)} />;
+  return (
+    <AdminDashboard
+      user={user}
+      role={role}
+      onLogout={() => {
+        setUser(null);
+        setRole(null);
+      }}
+    />
+  );
 }

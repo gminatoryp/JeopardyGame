@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { signOut } from 'firebase/auth';
+import { signOut, createUserWithEmailAndPassword } from 'firebase/auth';
 import { QRCodeSVG } from 'qrcode.react';
-import { auth } from './firebase';
+import { auth, secondaryAuth } from './firebase';
 import { generateToken, isTokenValid, encodeToken, formatWeekLabel } from './tokenUtils';
 import { getCurrentPosition, geoErrorMessage } from './geoUtils';
 import {
@@ -18,12 +18,195 @@ import {
   parseMembersCSV,
   getGeofenceConfig,
   saveGeofenceConfig,
+  getAllUsers,
+  createUserRecord,
+  updateUserRole,
+  removeUserRecord,
 } from './storage';
 
 const BASE_URL = `${window.location.origin}${import.meta.env.BASE_URL}`;
 
 function buildCheckinUrl(token) {
   return `${BASE_URL}#/checkin?token=${encodeURIComponent(encodeToken(token))}`;
+}
+
+function friendlyAuthError(code) {
+  switch (code) {
+    case 'auth/email-already-in-use': return 'An account with this email already exists.';
+    case 'auth/invalid-email': return 'Please enter a valid email address.';
+    case 'auth/weak-password': return 'Password must be at least 6 characters.';
+    default: return 'Something went wrong. Please try again.';
+  }
+}
+
+// ── Users tab (admin only) ────────────────────────────────────
+function UsersTab({ currentUser }) {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [addEmail, setAddEmail] = useState('');
+  const [addPassword, setAddPassword] = useState('');
+  const [addRole, setAddRole] = useState('manager');
+  const [addError, setAddError] = useState('');
+  const [addLoading, setAddLoading] = useState(false);
+  const [addSuccess, setAddSuccess] = useState('');
+
+  async function refresh() {
+    const u = await getAllUsers();
+    setUsers(u);
+  }
+
+  useEffect(() => {
+    refresh().then(() => setLoading(false));
+  }, []);
+
+  async function handleAdd(e) {
+    e.preventDefault();
+    setAddError('');
+    setAddSuccess('');
+    if (addPassword.length < 6) {
+      setAddError('Password must be at least 6 characters.');
+      return;
+    }
+    setAddLoading(true);
+    try {
+      const cred = await createUserWithEmailAndPassword(secondaryAuth, addEmail, addPassword);
+      await createUserRecord(cred.user.uid, addEmail, addRole, currentUser.email);
+      await signOut(secondaryAuth);
+      setAddEmail('');
+      setAddPassword('');
+      setAddRole('manager');
+      setAddSuccess(`Account created for ${addEmail}.`);
+      await refresh();
+    } catch (err) {
+      setAddError(friendlyAuthError(err.code));
+    }
+    setAddLoading(false);
+  }
+
+  async function handleRoleChange(uid, newRole) {
+    await updateUserRole(uid, newRole);
+    await refresh();
+  }
+
+  async function handleRemove(uid, email) {
+    if (!window.confirm(`Remove ${email}? They will lose dashboard access.`)) return;
+    await removeUserRecord(uid);
+    await refresh();
+  }
+
+  if (loading) return <div className="att-loading">Loading users…</div>;
+
+  return (
+    <div className="att-users-panel">
+      <div className="att-card att-users-add-card">
+        <h3 className="att-section-title">Add User</h3>
+        <form onSubmit={handleAdd} className="att-users-form">
+          <div className="att-users-form-row">
+            <div className="att-users-field">
+              <label className="att-label">Email</label>
+              <input
+                className="att-input"
+                type="email"
+                placeholder="user@example.com"
+                value={addEmail}
+                onChange={(e) => setAddEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="att-users-field">
+              <label className="att-label">Temporary Password</label>
+              <input
+                className="att-input"
+                type="password"
+                placeholder="Min. 6 characters"
+                value={addPassword}
+                onChange={(e) => setAddPassword(e.target.value)}
+                required
+              />
+            </div>
+            <div className="att-users-field att-users-role-field">
+              <label className="att-label">Role</label>
+              <select
+                className="att-select"
+                value={addRole}
+                onChange={(e) => setAddRole(e.target.value)}
+              >
+                <option value="admin">Admin</option>
+                <option value="manager">Manager</option>
+                <option value="user">User</option>
+              </select>
+            </div>
+          </div>
+          {addError && <p className="att-error">{addError}</p>}
+          {addSuccess && <p className="att-success-msg">{addSuccess}</p>}
+          <button className="att-btn att-btn-primary" type="submit" disabled={addLoading}>
+            {addLoading ? 'Creating…' : 'Create Account'}
+          </button>
+        </form>
+
+        <div className="att-role-legend">
+          <p><strong>Role permissions:</strong></p>
+          <ul>
+            <li><span className="att-role-badge att-role-admin">Admin</span> — QR Code, Dashboard, Members, Records, Settings, Users</li>
+            <li><span className="att-role-badge att-role-manager">Manager</span> — QR Code, Dashboard, Members, Records</li>
+            <li><span className="att-role-badge att-role-user">User</span> — Dashboard and Records only</li>
+          </ul>
+        </div>
+      </div>
+
+      <div className="att-users-list">
+        <span className="att-members-count">{users.length} user{users.length !== 1 ? 's' : ''}</span>
+        {users.length === 0 ? (
+          <div className="att-empty">No users found.</div>
+        ) : (
+          <div className="att-table-wrap">
+            <table className="att-table">
+              <thead>
+                <tr><th>Email</th><th>Role</th><th>Created</th><th></th></tr>
+              </thead>
+              <tbody>
+                {users.map((u) => (
+                  <tr key={u.id}>
+                    <td>
+                      {u.email}
+                      {u.id === currentUser.uid && (
+                        <span className="att-you-badge">you</span>
+                      )}
+                    </td>
+                    <td>
+                      {u.id === currentUser.uid ? (
+                        <span className={`att-role-badge att-role-${u.role}`}>{u.role}</span>
+                      ) : (
+                        <select
+                          className="att-select att-role-select"
+                          value={u.role}
+                          onChange={(e) => handleRoleChange(u.id, e.target.value)}
+                        >
+                          <option value="admin">Admin</option>
+                          <option value="manager">Manager</option>
+                          <option value="user">User</option>
+                        </select>
+                      )}
+                    </td>
+                    <td>{u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '—'}</td>
+                    <td>
+                      {u.id !== currentUser.uid && (
+                        <button
+                          className="att-btn-remove"
+                          onClick={() => handleRemove(u.id, u.email)}
+                          title="Remove user"
+                        >✕</button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 // ── Settings tab ─────────────────────────────────────────────
@@ -70,7 +253,7 @@ function SettingsTab() {
       setManualLat(updated.lat);
       setManualLon(updated.lon);
       await saveGeofenceConfig(updated);
-      setSaveMsg('Location saved — this device\'s current position is now the check-in center.');
+      setSaveMsg("Location saved — this device's current position is now the check-in center.");
       setTimeout(() => setSaveMsg(''), 4000);
     } catch (err) {
       setLocError(geoErrorMessage(err));
@@ -107,8 +290,6 @@ function SettingsTab() {
 
   return (
     <div className="att-settings-panel">
-
-      {/* Geofencing toggle */}
       <div className="att-card att-settings-card">
         <div className="att-settings-row">
           <div>
@@ -133,7 +314,6 @@ function SettingsTab() {
         )}
       </div>
 
-      {/* Location setup */}
       <div className="att-card att-settings-card">
         <h3 className="att-section-title">Church Location</h3>
         <p className="att-settings-desc">
@@ -211,7 +391,6 @@ function SettingsTab() {
         )}
       </div>
 
-      {/* Radius */}
       <div className="att-card att-settings-card">
         <h3 className="att-section-title">Check-in Radius</h3>
         <p className="att-settings-desc">
@@ -233,7 +412,6 @@ function SettingsTab() {
           {' '}({Math.round(config.radiusMiles * 5280)} feet)
         </p>
       </div>
-
     </div>
   );
 }
@@ -242,7 +420,6 @@ function SettingsTab() {
 function DashboardTab({ members, records, loading }) {
   const weeks = [...new Set(records.map((r) => r.weekStart))].sort();
 
-  // Build lookup: email → weekStart → record
   const lookup = {};
   for (const r of records) {
     if (!lookup[r.email]) lookup[r.email] = {};
@@ -297,9 +474,7 @@ function DashboardTab({ members, records, loading }) {
               <tr>
                 <th className="att-name-th">Member</th>
                 {weeks.map((w) => (
-                  <th key={w} className="att-week-th">
-                    {formatWeekLabel(w)}
-                  </th>
+                  <th key={w} className="att-week-th">{formatWeekLabel(w)}</th>
                 ))}
                 <th className="att-total-th">Total</th>
               </tr>
@@ -368,7 +543,6 @@ function DashboardTab({ members, records, loading }) {
 
 // ── Members tab ───────────────────────────────────────────────
 function MembersTab({ members, setMembers }) {
-  const [loading, setLoading] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -393,9 +567,7 @@ function MembersTab({ members, setMembers }) {
       setAddError('All fields are required.');
       return;
     }
-    const duplicate = members.find(
-      (m) => m.email.toLowerCase() === email.trim().toLowerCase()
-    );
+    const duplicate = members.find((m) => m.email.toLowerCase() === email.trim().toLowerCase());
     if (duplicate) {
       setAddError('A member with this email already exists.');
       return;
@@ -565,14 +737,23 @@ function MembersTab({ members, setMembers }) {
   );
 }
 
+// ── Tab config by role ────────────────────────────────────────
+const TABS_BY_ROLE = {
+  admin:   ['qr', 'dashboard', 'members', 'records', 'settings', 'users'],
+  manager: ['qr', 'dashboard', 'members', 'records'],
+  user:    ['dashboard', 'records'],
+};
+
 // ── Main dashboard ────────────────────────────────────────────
-export default function AdminDashboard({ onLogout }) {
+export default function AdminDashboard({ user, role, onLogout }) {
+  const allowedTabs = TABS_BY_ROLE[role] ?? TABS_BY_ROLE.user;
+
   const [token, setToken] = useState(null);
   const [tokenLoading, setTokenLoading] = useState(true);
   const [records, setRecords] = useState([]);
   const [members, setMembers] = useState([]);
   const [membersLoading, setMembersLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('qr');
+  const [activeTab, setActiveTab] = useState(allowedTabs[0]);
   const [copied, setCopied] = useState(false);
   const [filterSession, setFilterSession] = useState('all');
 
@@ -634,19 +815,35 @@ export default function AdminDashboard({ onLogout }) {
   const displayedRecords =
     filterSession === 'all' ? records : records.filter((r) => r.weekStart === filterSession);
 
+  const TAB_LABELS = {
+    qr: 'QR Code',
+    dashboard: 'Dashboard',
+    members: 'Members',
+    records: `Records (${records.length})`,
+    settings: 'Settings',
+    users: 'Users',
+  };
+
   return (
     <div className="att-dashboard">
       <header className="att-header">
-        <span className="att-header-title">Attendance Admin</span>
+        <div className="att-header-left">
+          <span className="att-header-title">Attendance Admin</span>
+          <span className={`att-role-badge att-role-${role}`}>{role}</span>
+        </div>
         <button className="att-btn att-btn-ghost" onClick={handleLogout}>Sign Out</button>
       </header>
 
       <nav className="att-tabs">
-        <button className={`att-tab ${activeTab === 'qr' ? 'active' : ''}`} onClick={() => setActiveTab('qr')}>QR Code</button>
-        <button className={`att-tab ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}>Dashboard</button>
-        <button className={`att-tab ${activeTab === 'members' ? 'active' : ''}`} onClick={() => setActiveTab('members')}>Members</button>
-        <button className={`att-tab ${activeTab === 'records' ? 'active' : ''}`} onClick={() => setActiveTab('records')}>Records ({records.length})</button>
-        <button className={`att-tab ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}>Settings</button>
+        {allowedTabs.map((tab) => (
+          <button
+            key={tab}
+            className={`att-tab ${activeTab === tab ? 'active' : ''}`}
+            onClick={() => setActiveTab(tab)}
+          >
+            {TAB_LABELS[tab]}
+          </button>
+        ))}
       </nav>
 
       {/* QR tab */}
@@ -680,11 +877,7 @@ export default function AdminDashboard({ onLogout }) {
 
       {/* Dashboard tab */}
       {activeTab === 'dashboard' && (
-        <DashboardTab
-          members={members}
-          records={records}
-          loading={membersLoading}
-        />
+        <DashboardTab members={members} records={records} loading={membersLoading} />
       )}
 
       {/* Members tab */}
@@ -735,6 +928,9 @@ export default function AdminDashboard({ onLogout }) {
           )}
         </div>
       )}
+
+      {/* Users tab (admin only) */}
+      {activeTab === 'users' && <UsersTab currentUser={user} />}
     </div>
   );
 }
