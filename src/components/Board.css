@@ -78,20 +78,6 @@
   display: none;
 }
 
-.cell.daily-double-cell {
-  background: linear-gradient(145deg, var(--bg-surface) 0%, #140e2e 100%);
-  border-color: rgba(140, 80, 220, 0.25);
-}
-
-.cell.daily-double-cell::after {
-  content: '★';
-  position: absolute;
-  top: 5px;
-  right: 7px;
-  font-size: 0.65rem;
-  color: var(--gold-400);
-  opacity: 0.5;
-}
 
 .cell-value {
   font-size: clamp(1.1rem, 2vw, 1.65rem);
