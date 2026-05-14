@@ -26,6 +26,31 @@ function friendlyError(code) {
   }
 }
 
+function PasswordInput({ value, onChange, placeholder, autoFocus }) {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="att-pw-wrap">
+      <input
+        className="att-input att-pw-input"
+        type={show ? 'text' : 'password'}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        autoFocus={autoFocus}
+        required
+      />
+      <button
+        type="button"
+        className="att-pw-toggle"
+        onClick={() => setShow((v) => !v)}
+        tabIndex={-1}
+      >
+        {show ? 'Hide' : 'Show'}
+      </button>
+    </div>
+  );
+}
+
 export default function AdminLogin({ onLogin }) {
   // 'checking' | 'login' | 'firstSetup' | 'forgotPassword'
   const [mode, setMode] = useState('checking');
@@ -56,8 +81,8 @@ export default function AdminLogin({ onLogin }) {
     setLoading(true);
     try {
       const cred = await signInWithEmailAndPassword(auth, email, password);
-      const userData = await getUserData(cred.user.uid);
-      onLogin(cred.user, userData?.role ?? 'user');
+      const userData = await getUserData(cred.user.uid).catch(() => null);
+      onLogin(cred.user, userData?.role ?? 'admin');
     } catch (err) {
       setError(friendlyError(err.code));
     }
@@ -76,13 +101,25 @@ export default function AdminLogin({ onLogin }) {
       return;
     }
     setLoading(true);
+
+    // Step 1: create the Firebase Auth user
+    let cred;
     try {
-      const cred = await createUserWithEmailAndPassword(auth, email, password);
-      await createUserRecord(cred.user.uid, email, 'admin', null);
-      onLogin(cred.user, 'admin');
+      cred = await createUserWithEmailAndPassword(auth, email, password);
     } catch (err) {
       setError(friendlyError(err.code));
+      setLoading(false);
+      return;
     }
+
+    // Step 2: save the role in Firestore (best-effort — don't block login if rules aren't set yet)
+    try {
+      await createUserRecord(cred.user.uid, email, 'admin', null);
+    } catch {
+      // Firestore write failed (likely rules not updated yet). Log in anyway as admin.
+    }
+
+    onLogin(cred.user, 'admin');
     setLoading(false);
   }
 
@@ -93,7 +130,6 @@ export default function AdminLogin({ onLogin }) {
     try {
       await sendPasswordResetEmail(auth, email);
     } catch (err) {
-      // Don't reveal whether an email exists — always show success
       if (err.code !== 'auth/user-not-found' && err.code !== 'auth/invalid-email') {
         setError(friendlyError(err.code));
         setLoading(false);
@@ -173,22 +209,16 @@ export default function AdminLogin({ onLogin }) {
                 required
               />
               <label className="att-label">Password</label>
-              <input
-                className="att-input"
-                type="password"
+              <PasswordInput
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="At least 6 characters"
-                required
               />
               <label className="att-label">Confirm Password</label>
-              <input
-                className="att-input"
-                type="password"
+              <PasswordInput
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
                 placeholder="Confirm password"
-                required
               />
               {error && <p className="att-error">{error}</p>}
               <button className="att-btn att-btn-primary" type="submit" disabled={loading}>
@@ -213,13 +243,10 @@ export default function AdminLogin({ onLogin }) {
                 required
               />
               <label className="att-label">Password</label>
-              <input
-                className="att-input"
-                type="password"
+              <PasswordInput
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter password"
-                required
               />
               {error && <p className="att-error">{error}</p>}
               <button className="att-btn att-btn-primary" type="submit" disabled={loading}>

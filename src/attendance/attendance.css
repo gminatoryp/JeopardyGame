@@ -810,6 +810,35 @@
   flex-shrink: 0;
 }
 
+/* ── Password show/hide ── */
+.att-pw-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.att-pw-input {
+  flex: 1;
+  padding-right: 3.5rem;
+}
+
+.att-pw-toggle {
+  position: absolute;
+  right: 0.6rem;
+  background: none;
+  border: none;
+  color: #3182ce;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+}
+
+.att-pw-toggle:hover {
+  background: #ebf4ff;
+}
+
 /* ── Role badges ── */
 .att-role-badge {
   display: inline-block;
