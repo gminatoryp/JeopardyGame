@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { decodeToken, isTokenValid, formatWeekLabel } from './tokenUtils';
-import { hasCheckedIn, addRecord, findMember, getMembers, getCurrentToken, getGeofenceConfig } from './storage';
+import { hasCheckedIn, addRecord, findMember, getMembers, getCurrentToken, getGeofenceConfig, logActivity } from './storage';
 import { getCurrentPosition, getDistanceMiles, geoErrorMessage } from './geoUtils';
 
 function getTokenFromUrl() {
@@ -129,16 +129,22 @@ function CheckinForm({ token, onSuccess }) {
       }
 
       // ── Record check-in ─────────────────────────────────────
+      const ts = Date.now();
       await addRecord({
         sessionId: token.sessionId,
         weekStart: token.weekStart,
         firstName: member.firstName,
         lastName: member.lastName,
         email: member.email,
-        timestamp: Date.now(),
+        timestamp: ts,
       });
+      logActivity(
+        'check_in',
+        `${member.firstName} ${member.lastName} (${member.email}) checked in`,
+        member.email
+      ).catch(() => {});
 
-      onSuccess({ firstName: member.firstName, lastName: member.lastName, weekStart: token.weekStart });
+      onSuccess({ firstName: member.firstName, lastName: member.lastName, weekStart: token.weekStart, timestamp: ts });
     } catch {
       setError('Something went wrong. Please check your connection and try again.');
     }
@@ -202,12 +208,21 @@ function CheckinForm({ token, onSuccess }) {
 
 // ── Success screen ────────────────────────────────────────────
 function SuccessScreen({ info }) {
+  const checkinTime = new Date(info.timestamp).toLocaleString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
   return (
     <div className="att-card att-success-card">
       <div className="att-success-icon">✓</div>
       <h2 className="att-success-title">Attendance Recorded!</h2>
       <p className="att-success-name">{info.firstName} {info.lastName}</p>
       <p className="att-week-label">Week of {formatWeekLabel(info.weekStart)}</p>
+      <p className="att-checkin-timestamp">Checked in at {checkinTime}</p>
     </div>
   );
 }

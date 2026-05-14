@@ -23,6 +23,8 @@ import {
   updateUserRole,
   removeUserRecord,
   updateMemberRole,
+  logActivity,
+  subscribeToActivityLog,
 } from './storage';
 
 const MEMBER_ROLES = ['Admin', 'Manager', 'User'];
@@ -49,7 +51,7 @@ function ConfirmModal({ message, confirmLabel = 'Remove', onConfirm, onCancel })
       <div className="att-modal-box" onClick={(e) => e.stopPropagation()}>
         <p className="att-modal-message">{message}</p>
         <div className="att-modal-actions">
-          <button className="att-btn att-btn-ghost att-modal-cancel" onClick={onCancel}>
+          <button className="att-btn att-btn-ghost att-modal-cancel" onClick={onCancel} autoFocus>
             Cancel
           </button>
           <button className="att-btn att-btn-danger" onClick={onConfirm}>
@@ -95,6 +97,7 @@ function UsersTab({ currentUser, onUsersChange }) {
     try {
       const cred = await createUserWithEmailAndPassword(secondaryAuth, addEmail, addPassword);
       await createUserRecord(cred.user.uid, addEmail, addRole, currentUser.email);
+      logActivity('user_created', `${addEmail} created with role: ${addRole}`, currentUser.email).catch(() => {});
       await signOut(secondaryAuth);
       setAddEmail('');
       setAddPassword('');
@@ -108,13 +111,16 @@ function UsersTab({ currentUser, onUsersChange }) {
   }
 
   async function handleRoleChange(uid, newRole) {
+    const target = users.find((u) => u.id === uid);
     await updateUserRole(uid, newRole);
+    if (target) logActivity('user_role_changed', `${target.email} changed to ${newRole}`, currentUser.email).catch(() => {});
     await refresh();
   }
 
   async function handleRemove(uid, email) {
     if (!window.confirm(`Remove ${email}? They will lose dashboard access.`)) return;
     await removeUserRecord(uid);
+    logActivity('user_removed', `${email} removed`, currentUser.email).catch(() => {});
     await refresh();
   }
 
@@ -246,7 +252,7 @@ function UsersTab({ currentUser, onUsersChange }) {
 }
 
 // ── Settings tab ─────────────────────────────────────────────
-function SettingsTab({ role }) {
+function SettingsTab({ role, currentUserEmail }) {
   const [config, setConfig] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -280,7 +286,9 @@ function SettingsTab({ role }) {
     const updated = { ...config, enabled: !config.enabled };
     setConfig(updated);
     await saveGeofenceConfig(updated);
-    setSaveMsg(updated.enabled ? 'Geofencing enabled.' : 'Geofencing disabled.');
+    const msg = updated.enabled ? 'Geofencing enabled.' : 'Geofencing disabled.';
+    logActivity('geofence_toggled', msg, currentUserEmail).catch(() => {});
+    setSaveMsg(msg);
     setTimeout(() => setSaveMsg(''), 3000);
   }
 
@@ -720,7 +728,8 @@ function DashboardTab({ members, records, loading }) {
 }
 
 // ── Members tab ───────────────────────────────────────────────
-function MembersTab({ members, setMembers, dashboardUsers = [] }) {
+function MembersTab({ members, setMembers, dashboardUsers = [], role, currentUserEmail }) {
+  const canRemove = role === 'admin' || role === 'manager';
   // Build a lookup: email → dashboard role (capitalized) for users who have login access
   const userRoleByEmail = Object.fromEntries(
     dashboardUsers.map((u) => [
@@ -767,6 +776,7 @@ function MembersTab({ members, setMembers, dashboardUsers = [] }) {
     setAddLoading(true);
     try {
       await addMember({ firstName, lastName, email });
+      logActivity('member_added', `${firstName} ${lastName} (${email})`, currentUserEmail).catch(() => {});
       setFirstName('');
       setLastName('');
       setEmail('');
@@ -778,8 +788,10 @@ function MembersTab({ members, setMembers, dashboardUsers = [] }) {
   }
 
   async function handleRemove(id) {
+    const target = members.find((m) => m.id === id);
     try {
       await removeMember(id);
+      if (target) logActivity('member_removed', `${target.firstName} ${target.lastName} (${target.email})`, currentUserEmail).catch(() => {});
       setMembers((prev) => prev.filter((m) => m.id !== id));
     } catch {
       alert('Failed to remove member. Please try again.');
@@ -792,6 +804,7 @@ function MembersTab({ members, setMembers, dashboardUsers = [] }) {
     if (!window.confirm(`Remove all ${members.length} members? This cannot be undone.`)) return;
     try {
       await clearAllMembers();
+      logActivity('members_cleared', `All ${members.length} members removed`, currentUserEmail).catch(() => {});
       setMembers([]);
     } catch {
       alert('Failed to clear members. Please try again.');
@@ -811,6 +824,7 @@ function MembersTab({ members, setMembers, dashboardUsers = [] }) {
       const existingEmails = new Set(members.map((m) => m.email.toLowerCase()));
       const newOnes = parsed.filter((m) => !existingEmails.has(m.email.toLowerCase()));
       if (newOnes.length > 0) await bulkAddMembers(newOnes);
+      logActivity('members_imported', `${newOnes.length} members imported (${parsed.length - newOnes.length} duplicates skipped)`, currentUserEmail).catch(() => {});
       await refresh();
       setCsvText('');
       setCsvSuccess(
@@ -949,7 +963,7 @@ function MembersTab({ members, setMembers, dashboardUsers = [] }) {
         <div className="att-table-wrap">
           <table className="att-table">
             <thead>
-              <tr><th>#</th><th>First Name</th><th>Last Name</th><th>Email</th><th>Role</th><th></th></tr>
+              <tr><th>#</th><th>First Name</th><th>Last Name</th><th>Email</th><th>Role</th>{canRemove && <th></th>}</tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
@@ -985,6 +999,7 @@ function MembersTab({ members, setMembers, dashboardUsers = [] }) {
                       </select>
                     )}
                   </td>
+                  {canRemove && (
                   <td>
                     <button
                       className="att-btn-remove-text"
@@ -993,6 +1008,7 @@ function MembersTab({ members, setMembers, dashboardUsers = [] }) {
                       Remove
                     </button>
                   </td>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -1143,10 +1159,89 @@ function ReportsTab({ members, records }) {
   );
 }
 
+// ── Activity log tab ──────────────────────────────────────────
+const ACTION_META = {
+  check_in:                 { label: 'Check-in',        color: '#276749', bg: '#f0fff4' },
+  member_added:             { label: 'Member Added',     color: '#2b6cb0', bg: '#ebf4ff' },
+  member_removed:           { label: 'Member Removed',   color: '#c53030', bg: '#fff5f5' },
+  members_imported:         { label: 'Import',           color: '#2b6cb0', bg: '#ebf4ff' },
+  members_cleared:          { label: 'Members Cleared',  color: '#c53030', bg: '#fff5f5' },
+  user_created:             { label: 'User Created',     color: '#6b46c1', bg: '#faf5ff' },
+  user_removed:             { label: 'User Removed',     color: '#c53030', bg: '#fff5f5' },
+  user_role_changed:        { label: 'Role Changed',     color: '#b7791f', bg: '#fffbeb' },
+  qr_regenerated:           { label: 'QR Regenerated',  color: '#6b46c1', bg: '#faf5ff' },
+  geofence_toggled:         { label: 'Geofence',         color: '#4a5568', bg: '#f7fafc' },
+  geofence_location_changed:{ label: 'Location Updated', color: '#4a5568', bg: '#f7fafc' },
+};
+
+function ActivityLogTab() {
+  const [log, setLog] = useState([]);
+  const [filter, setFilter] = useState('all');
+
+  useEffect(() => {
+    return subscribeToActivityLog(setLog);
+  }, []);
+
+  const filtered = filter === 'all' ? log
+    : filter === 'checkins' ? log.filter((e) => e.action === 'check_in')
+    : log.filter((e) => e.action !== 'check_in');
+
+  return (
+    <div className="att-records-panel">
+      <div className="att-records-toolbar">
+        <span className="att-members-count">{filtered.length} event{filtered.length !== 1 ? 's' : ''}</span>
+        <select
+          className="att-select"
+          style={{ flex: 'unset', width: 'auto', minWidth: 160 }}
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+        >
+          <option value="all">All activity</option>
+          <option value="checkins">Check-ins only</option>
+          <option value="admin">Admin actions only</option>
+        </select>
+      </div>
+      {filtered.length === 0 ? (
+        <div className="att-empty">No activity recorded yet.</div>
+      ) : (
+        <div className="att-table-wrap">
+          <table className="att-table">
+            <thead>
+              <tr><th>Time</th><th>Action</th><th>Details</th><th>Performed By</th></tr>
+            </thead>
+            <tbody>
+              {filtered.map((entry) => {
+                const meta = ACTION_META[entry.action] ?? { label: entry.action, color: '#4a5568', bg: '#f7fafc' };
+                return (
+                  <tr key={entry.id}>
+                    <td style={{ whiteSpace: 'nowrap', fontSize: '0.8rem', color: '#718096' }}>
+                      {new Date(entry.timestamp).toLocaleString('en-US', {
+                        month: 'short', day: 'numeric',
+                        hour: 'numeric', minute: '2-digit',
+                      })}
+                    </td>
+                    <td>
+                      <span className="att-activity-badge" style={{ color: meta.color, background: meta.bg }}>
+                        {meta.label}
+                      </span>
+                    </td>
+                    <td style={{ fontSize: '0.875rem' }}>{entry.details}</td>
+                    <td style={{ fontSize: '0.8rem', color: '#718096' }}>{entry.performedBy}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Tab config by role ────────────────────────────────────────
 const TABS_BY_ROLE = {
-  admin:   ['qr', 'dashboard', 'members', 'records', 'reports', 'settings', 'users'],
-  manager: ['qr', 'dashboard', 'members', 'records', 'reports'],
+  admin:   ['qr', 'dashboard', 'members', 'records', 'reports', 'activity', 'settings', 'users'],
+  manager: ['qr', 'dashboard', 'members', 'records', 'reports', 'activity'],
   user:    ['dashboard', 'records'],
 };
 
@@ -1197,6 +1292,7 @@ export default function AdminDashboard({ user, role, onLogout }) {
     if (!window.confirm('Generate a new QR code? The current code will no longer work.')) return;
     const newToken = generateToken();
     await saveCurrentToken(newToken);
+    logActivity('qr_regenerated', `New QR code generated for week of ${newToken.weekStart}`, user.email).catch(() => {});
     setToken(newToken);
   }
 
@@ -1281,6 +1377,7 @@ export default function AdminDashboard({ user, role, onLogout }) {
     members: 'Members',
     records: `Records (${records.length})`,
     reports: 'Reports',
+    activity: 'Activity',
     settings: 'Settings',
     users: 'Users',
   };
@@ -1360,7 +1457,7 @@ export default function AdminDashboard({ user, role, onLogout }) {
 
       {/* Members tab */}
       {activeTab === 'members' && (
-        <MembersTab members={members} setMembers={setMembers} dashboardUsers={dashboardUsers} />
+        <MembersTab members={members} setMembers={setMembers} dashboardUsers={dashboardUsers} role={role} currentUserEmail={user.email} />
       )}
 
       {/* Reports tab */}
@@ -1369,7 +1466,9 @@ export default function AdminDashboard({ user, role, onLogout }) {
       )}
 
       {/* Settings tab */}
-      {activeTab === 'settings' && <SettingsTab role={role} />}
+      {activeTab === 'activity' && <ActivityLogTab />}
+
+      {activeTab === 'settings' && <SettingsTab role={role} currentUserEmail={user.email} />}
 
       {/* Records tab */}
       {activeTab === 'records' && (

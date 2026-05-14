@@ -11,6 +11,7 @@ import {
   writeBatch,
   onSnapshot,
   limit,
+  orderBy,
 } from 'firebase/firestore';
 import { db } from './firebase';
 
@@ -252,4 +253,24 @@ export function parseMembersCSV(text) {
   }
 
   return members;
+}
+
+// ── Activity log ──────────────────────────────────────────────
+
+const ACTIVITY_COL = collection(db, 'activityLog');
+
+export async function logActivity(action, details, performedBy = 'system') {
+  await addDoc(ACTIVITY_COL, {
+    action,
+    details,
+    performedBy,
+    timestamp: Date.now(),
+  });
+}
+
+export function subscribeToActivityLog(callback) {
+  return onSnapshot(
+    query(ACTIVITY_COL, orderBy('timestamp', 'desc')),
+    (snap) => callback(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
+  );
 }

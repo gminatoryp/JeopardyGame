@@ -1082,6 +1082,24 @@
   gap: 0.3rem;
 }
 
+/* ── Activity log badge ── */
+.att-activity-badge {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* ── Check-in timestamp ── */
+.att-checkin-timestamp {
+  font-size: 0.82rem;
+  color: #718096;
+  margin: 0;
+  text-align: center;
+}
+
 /* ── Confirm modal ── */
 .att-modal-overlay {
   position: fixed;
