@@ -879,7 +879,9 @@ export default function AdminDashboard({ user, role, onLogout }) {
   const [membersLoading, setMembersLoading] = useState(true);
   const [activeTab, setActiveTab] = useState(allowedTabs[0]);
   const [copied, setCopied] = useState(false);
+  const [imgCopied, setImgCopied] = useState(false);
   const [filterSession, setFilterSession] = useState('all');
+  const qrRef = useRef(null);
 
   useEffect(() => {
     (async () => {
@@ -916,6 +918,53 @@ export default function AdminDashboard({ user, role, onLogout }) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });
+  }
+
+  function getQRCanvas(size = 600) {
+    const svg = qrRef.current?.querySelector('svg');
+    if (!svg) return null;
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+    const svgUrl = URL.createObjectURL(svgBlob);
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, size, size);
+        ctx.drawImage(img, 0, 0, size, size);
+        URL.revokeObjectURL(svgUrl);
+        resolve(canvas);
+      };
+      img.src = svgUrl;
+    });
+  }
+
+  async function handleDownloadPNG() {
+    const canvas = await getQRCanvas(800);
+    if (!canvas) return;
+    const a = document.createElement('a');
+    a.href = canvas.toDataURL('image/png');
+    a.download = `attendance-qr-${token.weekStart}.png`;
+    a.click();
+  }
+
+  async function handleCopyImage() {
+    const canvas = await getQRCanvas(600);
+    if (!canvas) return;
+    canvas.toBlob(async (blob) => {
+      try {
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+        setImgCopied(true);
+        setTimeout(() => setImgCopied(false), 2500);
+      } catch {
+        // Clipboard image API not supported — fall back to download
+        handleDownloadPNG();
+      }
+    }, 'image/png');
   }
 
   async function handleExportRecords() {
@@ -978,18 +1027,35 @@ export default function AdminDashboard({ user, role, onLogout }) {
           ) : (
             <div className="att-card att-qr-card">
               <p className="att-week-label">Week of {formatWeekLabel(token.weekStart)}</p>
-              <div className="att-qr-wrap">
+              <div className="att-qr-wrap" ref={qrRef}>
                 <QRCodeSVG value={buildCheckinUrl(token)} size={260} level="M" includeMargin />
               </div>
               <p className="att-qr-hint">Students scan this code to check in</p>
-              <div className="att-qr-actions">
-                <button className="att-btn att-btn-secondary" onClick={handleCopyUrl}>
-                  {copied ? 'Copied!' : 'Copy Check-in URL'}
-                </button>
-                <button className="att-btn att-btn-danger" onClick={handleRegenerate}>
-                  Regenerate Code
-                </button>
+
+              <div className="att-qr-export-group">
+                <p className="att-qr-export-label">Export for presentations</p>
+                <div className="att-qr-actions">
+                  <button className="att-btn att-btn-primary" onClick={handleDownloadPNG}>
+                    Download PNG
+                  </button>
+                  <button className="att-btn att-btn-secondary" onClick={handleCopyImage}>
+                    {imgCopied ? 'Image Copied!' : 'Copy Image'}
+                  </button>
+                </div>
               </div>
+
+              <div className="att-qr-export-group">
+                <p className="att-qr-export-label">Share check-in link</p>
+                <div className="att-qr-actions">
+                  <button className="att-btn att-btn-secondary" onClick={handleCopyUrl}>
+                    {copied ? 'Copied!' : 'Copy Check-in URL'}
+                  </button>
+                  <button className="att-btn att-btn-danger" onClick={handleRegenerate}>
+                    Regenerate Code
+                  </button>
+                </div>
+              </div>
+
               <details className="att-url-details">
                 <summary>Show check-in URL</summary>
                 <p className="att-url-text">{buildCheckinUrl(token)}</p>
