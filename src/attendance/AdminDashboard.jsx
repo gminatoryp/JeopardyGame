@@ -416,9 +416,51 @@ function SettingsTab() {
   );
 }
 
+// ── Dashboard helpers ─────────────────────────────────────────
+
+// Returns the Sunday date for a given Monday weekStart
+function getSundayDate(weekStart) {
+  const [y, m, d] = weekStart.split('-').map(Number);
+  const mon = new Date(y, m - 1, d);
+  mon.setDate(mon.getDate() + 6);
+  return mon;
+}
+
+// Short label for a Sunday column: "Jan 4"
+function formatSundayLabel(weekStart) {
+  return getSundayDate(weekStart).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+// All Sunday weekStarts (Monday keys) from first Sunday of 2026 through the most recent past Sunday
+function getAllSundayWeekStarts() {
+  const result = [];
+  // Find first Sunday of 2026 (Jan 4, 2026) and its Monday weekStart (Dec 29, 2025)
+  const jan1 = new Date(2026, 0, 1);
+  const daysToSunday = jan1.getDay() === 0 ? 0 : 7 - jan1.getDay();
+  const firstSunday = new Date(2026, 0, 1 + daysToSunday); // Jan 4, 2026
+  const firstMonday = new Date(firstSunday);
+  firstMonday.setDate(firstMonday.getDate() - 6); // Dec 29, 2025
+
+  const today = new Date();
+  today.setHours(23, 59, 59, 0);
+  let d = new Date(firstMonday);
+  while (true) {
+    const sunday = new Date(d);
+    sunday.setDate(sunday.getDate() + 6);
+    if (sunday > today) break;
+    result.push(d.toISOString().split('T')[0]);
+    d.setDate(d.getDate() + 7);
+  }
+  return result;
+}
+
 // ── Dashboard tab ─────────────────────────────────────────────
 function DashboardTab({ members, records, loading }) {
-  const weeks = [...new Set(records.map((r) => r.weekStart))].sort();
+  // Always show all 2026 Sundays; merge with any extra weekStarts from actual records
+  const sundayWeeks = getAllSundayWeekStarts();
+  const recordWeeks = [...new Set(records.map((r) => r.weekStart))];
+  const extraWeeks = recordWeeks.filter((w) => !sundayWeeks.includes(w));
+  const weeks = [...sundayWeeks, ...extraWeeks].sort();
 
   const lookup = {};
   for (const r of records) {
@@ -427,21 +469,22 @@ function DashboardTab({ members, records, loading }) {
   }
 
   function handleExport() {
-    const header = ['Member', 'Email', ...weeks.map((w) => formatWeekLabel(w)), 'Total'].join(',');
+    const header = ['Member', 'Email', ...weeks.map((w) => formatSundayLabel(w)), 'Total', 'Attendance %'].join(',');
     const rows = members.map((m) => {
       const attended = weeks.filter((w) => lookup[m.email]?.[w]).length;
+      const pct = weeks.length > 0 ? Math.round((attended / weeks.length) * 100) : 0;
       const cells = weeks.map((w) => {
         const r = lookup[m.email]?.[w];
         return r ? `"${new Date(r.timestamp).toLocaleString()}"` : '""';
       });
-      return [`"${m.firstName} ${m.lastName}"`, `"${m.email}"`, ...cells, attended].join(',');
+      return [`"${m.firstName} ${m.lastName}"`, `"${m.email}"`, ...cells, attended, `${pct}%`].join(',');
     });
     const csv = [header, ...rows].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'attendance-dashboard.csv';
+    a.download = 'attendance-2026.csv';
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -452,91 +495,92 @@ function DashboardTab({ members, records, loading }) {
     return <div className="att-empty">No members yet. Add members in the Members tab.</div>;
   }
 
+  const totalAttended = members.reduce((sum, m) => sum + weeks.filter((w) => lookup[m.email]?.[w]).length, 0);
+  const totalPossible = members.length * weeks.length;
+  const overallPct = totalPossible > 0 ? Math.round((totalAttended / totalPossible) * 100) : 0;
+
   return (
     <div className="att-dashboard-panel">
       <div className="att-records-toolbar">
         <span className="att-members-count">
-          {members.length} members · {weeks.length} week{weeks.length !== 1 ? 's' : ''}
+          {members.length} members · {weeks.length} Sunday{weeks.length !== 1 ? 's' : ''} · {overallPct}% overall attendance
         </span>
-        {weeks.length > 0 && (
-          <button className="att-btn att-btn-secondary" onClick={handleExport}>
-            Export CSV
-          </button>
-        )}
+        <button className="att-btn att-btn-secondary" onClick={handleExport}>
+          Export CSV
+        </button>
       </div>
 
-      {weeks.length === 0 ? (
-        <div className="att-empty">No attendance records yet. Share the QR code to get started.</div>
-      ) : (
-        <div className="att-table-wrap">
-          <table className="att-table att-matrix-table">
-            <thead>
-              <tr>
-                <th className="att-name-th">Member</th>
-                {weeks.map((w) => (
-                  <th key={w} className="att-week-th">{formatWeekLabel(w)}</th>
-                ))}
-                <th className="att-total-th">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {members.map((m) => {
-                const attended = weeks.filter((w) => lookup[m.email]?.[w]).length;
+      <div className="att-table-wrap">
+        <table className="att-table att-matrix-table">
+          <thead>
+            <tr>
+              <th className="att-name-th">Member</th>
+              {weeks.map((w) => (
+                <th key={w} className="att-week-th">
+                  <div>{formatSundayLabel(w)}</div>
+                </th>
+              ))}
+              <th className="att-total-th">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {members.map((m) => {
+              const attended = weeks.filter((w) => lookup[m.email]?.[w]).length;
+              const pct = weeks.length > 0 ? Math.round((attended / weeks.length) * 100) : 0;
+              return (
+                <tr key={m.id}>
+                  <td className="att-name-cell">
+                    <div className="att-member-name">{m.firstName} {m.lastName}</div>
+                    <div className="att-member-email">{m.email}</div>
+                  </td>
+                  {weeks.map((w) => {
+                    const record = lookup[m.email]?.[w];
+                    return (
+                      <td key={w} className="att-check-cell">
+                        {record ? (
+                          <div className="att-check-wrap">
+                            <span className="att-check">✓</span>
+                            <span className="att-check-time">
+                              {new Date(record.timestamp).toLocaleTimeString('en-US', {
+                                hour: 'numeric',
+                                minute: '2-digit',
+                              })}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="att-absent">—</span>
+                        )}
+                      </td>
+                    );
+                  })}
+                  <td className="att-total-cell">
+                    <span className={attended === weeks.length ? 'att-total-perfect' : 'att-total-partial'}>
+                      {attended}/{weeks.length}
+                    </span>
+                    <div style={{ fontSize: '0.7rem', color: '#a0aec0' }}>{pct}%</div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+          <tfoot>
+            <tr className="att-summary-row">
+              <td className="att-name-cell"><strong>Present</strong></td>
+              {weeks.map((w) => {
+                const count = members.filter((m) => lookup[m.email]?.[w]).length;
+                const pct = members.length > 0 ? Math.round((count / members.length) * 100) : 0;
                 return (
-                  <tr key={m.id}>
-                    <td className="att-name-cell">
-                      <div className="att-member-name">{m.firstName} {m.lastName}</div>
-                      <div className="att-member-email">{m.email}</div>
-                    </td>
-                    {weeks.map((w) => {
-                      const record = lookup[m.email]?.[w];
-                      return (
-                        <td key={w} className="att-check-cell">
-                          {record ? (
-                            <div className="att-check-wrap">
-                              <span className="att-check">✓</span>
-                              <span className="att-check-time">
-                                {new Date(record.timestamp).toLocaleTimeString('en-US', {
-                                  hour: 'numeric',
-                                  minute: '2-digit',
-                                })}
-                              </span>
-                            </div>
-                          ) : (
-                            <span className="att-absent">—</span>
-                          )}
-                        </td>
-                      );
-                    })}
-                    <td className="att-total-cell">
-                      <span className={attended === weeks.length ? 'att-total-perfect' : 'att-total-partial'}>
-                        {attended}/{weeks.length}
-                      </span>
-                    </td>
-                  </tr>
+                  <td key={w} className="att-check-cell">
+                    <strong>{count}</strong>
+                    <div style={{ fontSize: '0.7rem', color: '#718096' }}>{pct}%</div>
+                  </td>
                 );
               })}
-            </tbody>
-            <tfoot>
-              <tr className="att-summary-row">
-                <td className="att-name-cell"><strong>Total Present</strong></td>
-                {weeks.map((w) => {
-                  const count = members.filter((m) => lookup[m.email]?.[w]).length;
-                  return (
-                    <td key={w} className="att-check-cell">
-                      <strong>{count}</strong>
-                      <div style={{ fontSize: '0.7rem', color: '#718096' }}>
-                        {Math.round((count / members.length) * 100)}%
-                      </div>
-                    </td>
-                  );
-                })}
-                <td />
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-      )}
+              <td />
+            </tr>
+          </tfoot>
+        </table>
+      </div>
     </div>
   );
 }
