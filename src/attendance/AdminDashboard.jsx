@@ -260,6 +260,8 @@ function SettingsTab() {
       setTimeout(() => setSaveMsg(''), 4000);
     } catch (err) {
       setLocError(geoErrorMessage(err));
+      // Auto-open manual entry as an alternative when location is blocked
+      if (err.code === 1) setShowManual(true);
     }
     setLocating(false);
   }
@@ -375,7 +377,18 @@ function SettingsTab() {
           </div>
         )}
 
-        {locError && <p className="att-error" style={{ marginTop: '0.75rem' }}>{locError}</p>}
+        {locError && (
+          <div className="att-loc-error-block" style={{ marginTop: '0.75rem' }}>
+            <p className="att-error">{locError}</p>
+            {locError.includes('denied') && (
+              <p className="att-settings-desc" style={{ marginTop: '0.4rem' }}>
+                <strong>To allow in Chrome:</strong> click the lock icon in the address bar → Site settings → Location → Allow, then try again.{' '}
+                <strong>In Safari:</strong> Safari menu → Settings for This Website → Location → Allow.
+                Or use the manual coordinates form above.
+              </p>
+            )}
+          </div>
+        )}
         {saveMsg && <p className="att-success-msg" style={{ marginTop: '0.75rem' }}>{saveMsg}</p>}
 
         {hasLocation && (
@@ -860,10 +873,149 @@ function MembersTab({ members, setMembers }) {
   );
 }
 
+// ── Reports tab ───────────────────────────────────────────────
+function ReportsTab({ members, records }) {
+  const weeks = getAllSundayWeekStarts();
+
+  // Weekly: unique attendees per Sunday
+  const weeklyStats = weeks.map((w) => {
+    const checkedIn = new Set(records.filter((r) => r.weekStart === w).map((r) => r.email)).size;
+    const pct = members.length > 0 ? Math.round((checkedIn / members.length) * 100) : 0;
+    return { weekStart: w, checkedIn, pct };
+  });
+
+  // Monthly: group weeks by calendar month
+  const monthMap = new Map();
+  weeks.forEach((w) => {
+    const sunday = getSundayDate(w);
+    const key = `${sunday.getFullYear()}-${String(sunday.getMonth() + 1).padStart(2, '0')}`;
+    const label = sunday.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    if (!monthMap.has(key)) monthMap.set(key, { label, weeks: [] });
+    monthMap.get(key).weeks.push(w);
+  });
+
+  const monthlyStats = [...monthMap.values()].map((group) => {
+    const sundayCount = group.weeks.length;
+    const totalCheckins = group.weeks.reduce((sum, w) => {
+      return sum + new Set(records.filter((r) => r.weekStart === w).map((r) => r.email)).size;
+    }, 0);
+    const avgPerSunday = sundayCount > 0 ? (totalCheckins / sundayCount).toFixed(1) : '0';
+    const pct =
+      members.length > 0 && sundayCount > 0
+        ? Math.round((totalCheckins / (members.length * sundayCount)) * 100)
+        : 0;
+    return { label: group.label, sundayCount, totalCheckins, avgPerSunday, pct };
+  });
+
+  function handleExport() {
+    const weekRows = weeklyStats
+      .map((s) => `"${formatSundayLabel(s.weekStart)}",${s.checkedIn},${members.length},${s.pct}%`)
+      .join('\n');
+    const monthRows = monthlyStats
+      .map((s) => `"${s.label}",${s.sundayCount},${s.totalCheckins},${s.avgPerSunday},${s.pct}%`)
+      .join('\n');
+    const csv =
+      'Sunday,Members Present,Total Members,Attendance %\n' +
+      weekRows +
+      '\n\nMonth,Sundays,Total Check-ins,Avg / Sunday,Avg Attendance %\n' +
+      monthRows;
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'attendance-report-2026.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  if (members.length === 0) {
+    return <div className="att-empty">No members yet. Add members in the Members tab.</div>;
+  }
+
+  return (
+    <div className="att-reports-panel">
+      <div className="att-records-toolbar">
+        <span className="att-members-count">
+          {members.length} members · {weeks.length} Sundays in 2026
+        </span>
+        <button className="att-btn att-btn-secondary" onClick={handleExport}>
+          Export CSV
+        </button>
+      </div>
+
+      {/* Monthly summary */}
+      <div className="att-card att-reports-card">
+        <h3 className="att-section-title">Monthly Summary</h3>
+        <div className="att-table-wrap">
+          <table className="att-table">
+            <thead>
+              <tr>
+                <th>Month</th>
+                <th>Sundays</th>
+                <th>Total Check-ins</th>
+                <th>Avg / Sunday</th>
+                <th>Avg Attendance</th>
+              </tr>
+            </thead>
+            <tbody>
+              {monthlyStats.map((s) => (
+                <tr key={s.label}>
+                  <td><strong>{s.label}</strong></td>
+                  <td>{s.sundayCount}</td>
+                  <td>{s.totalCheckins}</td>
+                  <td>{s.avgPerSunday}</td>
+                  <td>
+                    <div className="att-pct-bar-wrap">
+                      <div className="att-pct-bar" style={{ width: `${s.pct}%` }} />
+                      <span className="att-pct-label">{s.pct}%</span>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Weekly detail */}
+      <div className="att-card att-reports-card">
+        <h3 className="att-section-title">Weekly Attendance</h3>
+        <div className="att-table-wrap">
+          <table className="att-table">
+            <thead>
+              <tr>
+                <th>Sunday</th>
+                <th>Members Present</th>
+                <th>Total Members</th>
+                <th>Attendance</th>
+              </tr>
+            </thead>
+            <tbody>
+              {weeklyStats.map((s) => (
+                <tr key={s.weekStart}>
+                  <td>{formatSundayLabel(s.weekStart)}</td>
+                  <td><strong>{s.checkedIn}</strong></td>
+                  <td>{members.length}</td>
+                  <td>
+                    <div className="att-pct-bar-wrap">
+                      <div className="att-pct-bar" style={{ width: `${s.pct}%` }} />
+                      <span className="att-pct-label">{s.pct}%</span>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Tab config by role ────────────────────────────────────────
 const TABS_BY_ROLE = {
-  admin:   ['qr', 'dashboard', 'members', 'records', 'settings', 'users'],
-  manager: ['qr', 'dashboard', 'members', 'records'],
+  admin:   ['qr', 'dashboard', 'members', 'records', 'reports', 'settings', 'users'],
+  manager: ['qr', 'dashboard', 'members', 'records', 'reports'],
   user:    ['dashboard', 'records'],
 };
 
@@ -992,6 +1144,7 @@ export default function AdminDashboard({ user, role, onLogout }) {
     dashboard: 'Dashboard',
     members: 'Members',
     records: `Records (${records.length})`,
+    reports: 'Reports',
     settings: 'Settings',
     users: 'Users',
   };
@@ -1072,6 +1225,11 @@ export default function AdminDashboard({ user, role, onLogout }) {
       {/* Members tab */}
       {activeTab === 'members' && (
         <MembersTab members={members} setMembers={setMembers} />
+      )}
+
+      {/* Reports tab */}
+      {activeTab === 'reports' && (
+        <ReportsTab members={members} records={records} />
       )}
 
       {/* Settings tab */}

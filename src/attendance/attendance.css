@@ -1050,6 +1050,49 @@
   gap: 0.3rem;
 }
 
+/* ── Reports tab ── */
+.att-reports-panel {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.att-reports-card {
+  padding: 1.25rem 1.5rem;
+}
+
+.att-pct-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 120px;
+}
+
+.att-pct-bar {
+  height: 8px;
+  border-radius: 4px;
+  background: #3182ce;
+  min-width: 2px;
+  flex-shrink: 0;
+  max-width: 80px;
+  transition: width 0.3s;
+}
+
+.att-pct-label {
+  font-size: 0.85rem;
+  color: #4a5568;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* ── Location error guidance block ── */
+.att-loc-error-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
 /* ── Forgot-password reset-sent state ── */
 .att-reset-sent {
   background: #f0fff4;
