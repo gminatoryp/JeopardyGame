@@ -42,6 +42,25 @@ function friendlyAuthError(code) {
   }
 }
 
+// ── Confirm modal ─────────────────────────────────────────────
+function ConfirmModal({ message, confirmLabel = 'Remove', onConfirm, onCancel }) {
+  return (
+    <div className="att-modal-overlay" onClick={onCancel}>
+      <div className="att-modal-box" onClick={(e) => e.stopPropagation()}>
+        <p className="att-modal-message">{message}</p>
+        <div className="att-modal-actions">
+          <button className="att-btn att-btn-ghost att-modal-cancel" onClick={onCancel}>
+            Cancel
+          </button>
+          <button className="att-btn att-btn-danger" onClick={onConfirm}>
+            {confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Users tab (admin only) ────────────────────────────────────
 function UsersTab({ currentUser }) {
   const [users, setUsers] = useState([]);
@@ -700,6 +719,7 @@ function MembersTab({ members, setMembers }) {
   const [showCsvPanel, setShowCsvPanel] = useState(false);
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
+  const [confirmRemove, setConfirmRemove] = useState(null); // { id, name }
   const fileRef = useRef(null);
 
   async function refresh() {
@@ -733,12 +753,13 @@ function MembersTab({ members, setMembers }) {
   }
 
   async function handleRemove(id) {
-    if (!window.confirm('Remove this member?')) return;
     try {
       await removeMember(id);
       setMembers((prev) => prev.filter((m) => m.id !== id));
     } catch {
       alert('Failed to remove member. Please try again.');
+    } finally {
+      setConfirmRemove(null);
     }
   }
 
@@ -800,6 +821,14 @@ function MembersTab({ members, setMembers }) {
 
   return (
     <div className="att-members-panel">
+      {confirmRemove && (
+        <ConfirmModal
+          message={`Remove ${confirmRemove.name} from the member list?`}
+          confirmLabel="Remove"
+          onConfirm={() => handleRemove(confirmRemove.id)}
+          onCancel={() => setConfirmRemove(null)}
+        />
+      )}
       <div className="att-card att-members-add-card">
         <h3 className="att-section-title">Add Member</h3>
         <form onSubmit={handleAdd} className="att-inline-form">
@@ -926,7 +955,12 @@ function MembersTab({ members, setMembers }) {
                     </select>
                   </td>
                   <td>
-                    <button className="att-btn-remove" onClick={() => handleRemove(m.id)} title="Remove member">✕</button>
+                    <button
+                      className="att-btn-remove-text"
+                      onClick={() => setConfirmRemove({ id: m.id, name: `${m.firstName} ${m.lastName}` })}
+                    >
+                      Remove
+                    </button>
                   </td>
                 </tr>
               ))}
