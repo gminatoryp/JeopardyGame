@@ -191,18 +191,61 @@ export function exportRecordsCSV(records) {
 
 export function parseMembersCSV(text) {
   const lines = text.trim().split(/\r?\n/).filter((l) => l.trim());
+  if (lines.length === 0) return [];
+
+  // Parse one CSV line respecting quoted fields
+  function parseLine(line) {
+    const fields = [];
+    let cur = '';
+    let inQuote = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') {
+        inQuote = !inQuote;
+      } else if (ch === ',' && !inQuote) {
+        fields.push(cur.trim());
+        cur = '';
+      } else {
+        cur += ch;
+      }
+    }
+    fields.push(cur.trim());
+    return fields;
+  }
+
+  // Detect header row by checking if first row contains no email addresses
+  const firstRow = parseLine(lines[0]);
+  const firstRowNorm = firstRow.map((f) => f.toLowerCase().replace(/\s+/g, ''));
+  const hasHeader = firstRowNorm.every((f) => !f.includes('@'));
+
+  let firstNameIdx = 0;
+  let lastNameIdx = 1;
+  let emailIdx = 2;
+
+  if (hasHeader) {
+    firstRowNorm.forEach((h, i) => {
+      if (['firstname', 'first name', 'fname'].includes(h)) firstNameIdx = i;
+      if (['lastname', 'last name', 'lname'].includes(h)) lastNameIdx = i;
+      if (['email', 'homeemail', 'home email', 'emailaddress', 'e-mail'].includes(h)) emailIdx = i;
+    });
+  }
+
+  const startLine = hasHeader ? 1 : 0;
   const members = [];
-  for (const line of lines) {
-    const parts = line.split(',').map((p) => p.replace(/^"|"$/g, '').trim());
-    if (parts.length < 3) continue;
-    const [firstName, lastName, email] = parts;
-    if (
-      firstName.toLowerCase() === 'first name' ||
-      firstName.toLowerCase() === 'firstname'
-    )
-      continue;
-    if (!email.includes('@')) continue;
+
+  for (let i = startLine; i < lines.length; i++) {
+    const parts = parseLine(lines[i]);
+    const maxIdx = Math.max(firstNameIdx, lastNameIdx, emailIdx);
+    if (parts.length <= maxIdx) continue;
+
+    const firstName = parts[firstNameIdx];
+    const lastName = parts[lastNameIdx];
+    // Strip trailing semicolons (common export artifact)
+    const email = parts[emailIdx].replace(/[;\s]+$/, '');
+
+    if (!firstName || !lastName || !email.includes('@')) continue;
     members.push({ firstName, lastName, email: email.toLowerCase() });
   }
+
   return members;
 }
