@@ -897,10 +897,15 @@ function MembersTab({ members, setMembers }) {
                       className="att-select att-role-select"
                       value={m.memberRole || 'User'}
                       onChange={async (e) => {
-                        await updateMemberRole(m.id, e.target.value);
-                        setMembers((prev) =>
-                          prev.map((x) => x.id === m.id ? { ...x, memberRole: e.target.value } : x)
-                        );
+                        const newRole = e.target.value;
+                        try {
+                          await updateMemberRole(m.id, newRole);
+                          setMembers((prev) =>
+                            prev.map((x) => x.id === m.id ? { ...x, memberRole: newRole } : x)
+                          );
+                        } catch {
+                          alert('Failed to update role. Please try again.');
+                        }
                       }}
                     >
                       {MEMBER_ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
