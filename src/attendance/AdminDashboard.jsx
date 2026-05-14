@@ -25,7 +25,7 @@ import {
   updateMemberRole,
 } from './storage';
 
-const MEMBER_ROLES = ['Member', 'Elder', 'Deacon', 'Staff', 'Youth', 'Guest'];
+const MEMBER_ROLES = ['Admin', 'Manager', 'User'];
 
 const BASE_URL = `${window.location.origin}${import.meta.env.BASE_URL}`;
 
@@ -487,7 +487,7 @@ function getAllSundayWeekStarts() {
 
 // ── Dashboard tab ─────────────────────────────────────────────
 function DashboardTab({ members, records, loading }) {
-  const [roleFilter, setRoleFilter] = useState('All');
+  const [colorFilter, setColorFilter] = useState('all');
 
   // Always show all 2026 Sundays; merge with any extra weekStarts from actual records
   const sundayWeeks = getAllSundayWeekStarts();
@@ -495,18 +495,18 @@ function DashboardTab({ members, records, loading }) {
   const extraWeeks = recordWeeks.filter((w) => !sundayWeeks.includes(w));
   const weeks = [...sundayWeeks, ...extraWeeks].sort();
 
-  const filteredMembers = roleFilter === 'All'
-    ? members
-    : members.filter((m) => (m.memberRole || 'Member') === roleFilter);
-
   const lookup = {};
   for (const r of records) {
     if (!lookup[r.email]) lookup[r.email] = {};
     lookup[r.email][r.weekStart] = r;
   }
 
+  const filteredMembers = colorFilter === 'all'
+    ? members
+    : members.filter((m) => getMemberStatus(m.email, weeks, lookup) === (colorFilter === 'none' ? null : colorFilter));
+
   function handleExport() {
-    const header = ['Member', 'Role', 'Email', ...weeks.map((w) => formatSundayLabel(w)), 'Total', 'Attendance %'].join(',');
+    const header = ['Member', 'Email', ...weeks.map((w) => formatSundayLabel(w)), 'Total', 'Attendance %'].join(',');
     const rows = filteredMembers.map((m) => {
       const attended = weeks.filter((w) => lookup[m.email]?.[w]).length;
       const pct = weeks.length > 0 ? Math.round((attended / weeks.length) * 100) : 0;
@@ -514,7 +514,7 @@ function DashboardTab({ members, records, loading }) {
         const r = lookup[m.email]?.[w];
         return r ? `"${new Date(r.timestamp).toLocaleString()}"` : '""';
       });
-      return [`"${m.firstName} ${m.lastName}"`, `"${m.memberRole || 'Member'}"`, `"${m.email}"`, ...cells, attended, `${pct}%`].join(',');
+      return [`"${m.firstName} ${m.lastName}"`, `"${m.email}"`, ...cells, attended, `${pct}%`].join(',');
     });
     const csv = [header, ...rows].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -540,17 +540,19 @@ function DashboardTab({ members, records, loading }) {
     <div className="att-dashboard-panel">
       <div className="att-records-toolbar">
         <span className="att-members-count">
-          {filteredMembers.length}{roleFilter !== 'All' ? ` ${roleFilter}s` : ' members'} · {weeks.length} Sunday{weeks.length !== 1 ? 's' : ''} · {overallPct}% overall attendance
+          {filteredMembers.length} member{filteredMembers.length !== 1 ? 's' : ''} · {weeks.length} Sunday{weeks.length !== 1 ? 's' : ''} · {overallPct}% overall attendance
         </span>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           <select
             className="att-select"
             style={{ minWidth: 'unset', flex: 'unset', width: 'auto' }}
-            value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value)}
+            value={colorFilter}
+            onChange={(e) => setColorFilter(e.target.value)}
           >
-            <option value="All">All roles</option>
-            {MEMBER_ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
+            <option value="all">All members</option>
+            <option value="red">🔴 At-risk only</option>
+            <option value="yellow">🟡 Streak misses only</option>
+            <option value="none">✅ No alerts</option>
           </select>
           <button className="att-btn att-btn-secondary" onClick={handleExport}>
             Export CSV
@@ -594,10 +596,7 @@ function DashboardTab({ members, records, loading }) {
                     <div className={`att-member-name ${status ? `att-status-${status}` : ''}`}>
                       {m.firstName} {m.lastName}
                     </div>
-                    <div className="att-member-role-row">
-                      <span className="att-member-role-badge">{m.memberRole || 'Member'}</span>
-                      <span className="att-member-email">{m.email}</span>
-                    </div>
+                    <div className="att-member-email">{m.email}</div>
                   </td>
                   {weeks.map((w) => {
                     const record = lookup[m.email]?.[w];
@@ -837,7 +836,7 @@ function MembersTab({ members, setMembers }) {
                   <td>
                     <select
                       className="att-select att-role-select"
-                      value={m.memberRole || 'Member'}
+                      value={m.memberRole || 'User'}
                       onChange={async (e) => {
                         await updateMemberRole(m.id, e.target.value);
                         setMembers((prev) =>
