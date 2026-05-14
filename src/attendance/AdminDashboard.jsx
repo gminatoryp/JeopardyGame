@@ -418,6 +418,34 @@ function SettingsTab() {
 
 // ── Dashboard helpers ─────────────────────────────────────────
 
+// Returns 'red', 'yellow', or null for a member's attendance status
+// red   = missed >50% of Sundays in any rolling 13-week (≈3-month) window
+// yellow = missed 4+ consecutive Sundays at any point
+function getMemberStatus(email, weeks, lookup) {
+  if (weeks.length === 0) return null;
+
+  // Red: >50% missed in any 13-week window (or full period if < 13 weeks)
+  const win = Math.min(13, weeks.length);
+  for (let i = 0; i <= weeks.length - win; i++) {
+    const slice = weeks.slice(i, i + win);
+    const missed = slice.filter((w) => !lookup[email]?.[w]).length;
+    if (missed > win / 2) return 'red';
+  }
+
+  // Yellow: 4+ consecutive misses
+  let streak = 0;
+  for (const w of weeks) {
+    if (!lookup[email]?.[w]) {
+      streak++;
+      if (streak >= 4) return 'yellow';
+    } else {
+      streak = 0;
+    }
+  }
+
+  return null;
+}
+
 // Returns the Sunday date for a given Monday weekStart
 function getSundayDate(weekStart) {
   const [y, m, d] = weekStart.split('-').map(Number);
@@ -510,6 +538,18 @@ function DashboardTab({ members, records, loading }) {
         </button>
       </div>
 
+      {/* Legend */}
+      <div className="att-legend">
+        <span className="att-legend-item">
+          <span className="att-legend-dot att-legend-dot-red" />
+          <span>Missed &gt;50% of Sundays in any 3-month stretch</span>
+        </span>
+        <span className="att-legend-item">
+          <span className="att-legend-dot att-legend-dot-yellow" />
+          <span>Missed 4+ Sundays in a row</span>
+        </span>
+      </div>
+
       <div className="att-table-wrap">
         <table className="att-table att-matrix-table">
           <thead>
@@ -527,10 +567,13 @@ function DashboardTab({ members, records, loading }) {
             {members.map((m) => {
               const attended = weeks.filter((w) => lookup[m.email]?.[w]).length;
               const pct = weeks.length > 0 ? Math.round((attended / weeks.length) * 100) : 0;
+              const status = getMemberStatus(m.email, weeks, lookup);
               return (
                 <tr key={m.id}>
                   <td className="att-name-cell">
-                    <div className="att-member-name">{m.firstName} {m.lastName}</div>
+                    <div className={`att-member-name ${status ? `att-status-${status}` : ''}`}>
+                      {m.firstName} {m.lastName}
+                    </div>
                     <div className="att-member-email">{m.email}</div>
                   </td>
                   {weeks.map((w) => {

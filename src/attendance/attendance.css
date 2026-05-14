@@ -586,6 +586,57 @@
   color: #2d3748;
 }
 
+.att-status-yellow {
+  color: #92400e;
+  background: #fef3c7;
+  border-radius: 4px;
+  padding: 0 4px;
+}
+
+.att-status-red {
+  color: #991b1b;
+  background: #fee2e2;
+  border-radius: 4px;
+  padding: 0 4px;
+}
+
+/* ── Dashboard legend ── */
+.att-legend {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  padding: 0.6rem 1rem;
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.8rem;
+  color: #4a5568;
+}
+
+.att-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.att-legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.att-legend-dot-red {
+  background: #fee2e2;
+  border: 2px solid #991b1b;
+}
+
+.att-legend-dot-yellow {
+  background: #fef3c7;
+  border: 2px solid #92400e;
+}
+
 .att-member-email {
   font-size: 0.75rem;
   color: #a0aec0;
