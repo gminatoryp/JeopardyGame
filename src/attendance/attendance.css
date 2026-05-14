@@ -548,6 +548,20 @@
   color: #2c5282;
 }
 
+.att-text-btn-small {
+  font-size: 0.78rem;
+  color: #a0aec0;
+}
+
+.att-text-btn-small:hover:not(:disabled) {
+  color: #718096;
+}
+
+.att-text-btn-small:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* ── Loading state ── */
 .att-loading {
   text-align: center;

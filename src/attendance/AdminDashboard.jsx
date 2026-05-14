@@ -224,11 +224,21 @@ function SettingsTab() {
   const [manualLon, setManualLon] = useState('');
   const [showManual, setShowManual] = useState(false);
 
+  const DEFAULT_LAT = 34.242711;
+  const DEFAULT_LON = -118.464373;
+
   useEffect(() => {
-    getGeofenceConfig().then((c) => {
-      setConfig(c);
-      setManualLat(c.lat ?? '');
-      setManualLon(c.lon ?? '');
+    getGeofenceConfig().then(async (c) => {
+      const withDefaults = {
+        ...c,
+        lat: c.lat ?? DEFAULT_LAT,
+        lon: c.lon ?? DEFAULT_LON,
+      };
+      setConfig(withDefaults);
+      setManualLat(withDefaults.lat);
+      setManualLon(withDefaults.lon);
+      // Persist defaults on first run so geofencing works immediately
+      if (c.lat == null) await saveGeofenceConfig(withDefaults);
       setLoading(false);
     });
   }, []);
@@ -242,6 +252,11 @@ function SettingsTab() {
   }
 
   async function handleUseMyLocation() {
+    if (
+      !window.confirm(
+        'This will overwrite the saved church location with this device\'s current GPS position. Only do this if you are physically at the church right now. Continue?'
+      )
+    ) return;
     setLocating(true);
     setLocError('');
     try {
@@ -260,7 +275,6 @@ function SettingsTab() {
       setTimeout(() => setSaveMsg(''), 4000);
     } catch (err) {
       setLocError(geoErrorMessage(err));
-      // Auto-open manual entry as an alternative when location is blocked
       if (err.code === 1) setShowManual(true);
     }
     setLocating(false);
@@ -322,22 +336,24 @@ function SettingsTab() {
       <div className="att-card att-settings-card">
         <h3 className="att-section-title">Church Location</h3>
         <p className="att-settings-desc">
-          Go to your church, then click the button below to save your exact GPS coordinates.
+          The church coordinates are pre-set. You can adjust them manually if needed.
+          Only use "Use my current GPS location" if you are physically at the church.
         </p>
 
         <div className="att-geo-actions">
           <button
             className="att-btn att-btn-primary"
-            onClick={handleUseMyLocation}
-            disabled={locating}
-          >
-            {locating ? 'Getting location…' : '📍 Set to My Current Location'}
-          </button>
-          <button
-            className="att-text-btn"
             onClick={() => setShowManual((v) => !v)}
           >
-            {showManual ? 'Hide manual entry' : 'Enter coordinates manually'}
+            {showManual ? 'Hide coordinates' : '✏️ Edit Coordinates'}
+          </button>
+          <button
+            className="att-text-btn att-text-btn-small"
+            onClick={handleUseMyLocation}
+            disabled={locating}
+            title="Only use this if you are physically at the church right now"
+          >
+            {locating ? 'Getting location…' : '📍 Use my current GPS location'}
           </button>
         </div>
 
