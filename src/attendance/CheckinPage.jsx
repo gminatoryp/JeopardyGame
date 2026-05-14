@@ -138,13 +138,18 @@ function CheckinForm({ token, onSuccess }) {
         email: member.email,
         timestamp: ts,
       });
-      logActivity(
-        'check_in',
-        `${member.firstName} ${member.lastName} (${member.email}) checked in`,
-        member.email
-      ).catch(() => {});
 
+      // Signal success immediately before any optional logging
       onSuccess({ firstName: member.firstName, lastName: member.lastName, weekStart: token.weekStart, timestamp: ts });
+
+      // Fire-and-forget activity log — runs after success, never blocks or throws
+      setTimeout(() => {
+        logActivity(
+          'check_in',
+          `${member.firstName} ${member.lastName} (${member.email}) checked in`,
+          member.email
+        ).catch(() => {});
+      }, 0);
     } catch {
       setError('Something went wrong. Please check your connection and try again.');
     }

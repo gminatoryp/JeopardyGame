@@ -73,7 +73,7 @@ function UsersTab({ currentUser, onUsersChange }) {
   const [addError, setAddError] = useState('');
   const [addLoading, setAddLoading] = useState(false);
   const [addSuccess, setAddSuccess] = useState('');
-  const [roleFilter, setRoleFilter] = useState('all');
+  const [roleFilter, setRoleFilter] = useState('admin+manager');
 
   async function refresh() {
     const u = await getAllUsers();
@@ -192,22 +192,34 @@ function UsersTab({ currentUser, onUsersChange }) {
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
           >
+            <option value="admin+manager">Admins &amp; Managers</option>
             <option value="all">All roles</option>
-            <option value="admin">Admin</option>
-            <option value="manager">Manager</option>
-            <option value="user">User</option>
+            <option value="admin">Admin only</option>
+            <option value="manager">Manager only</option>
+            <option value="user">User only</option>
           </select>
         </div>
         {users.length === 0 ? (
           <div className="att-empty">No users found.</div>
-        ) : (
+        ) : (() => {
+          const filtered = users.filter((u) =>
+            roleFilter === 'all' ? true :
+            roleFilter === 'admin+manager' ? (u.role === 'admin' || u.role === 'manager') :
+            u.role === roleFilter
+          );
+          const roleLabel = { admin: 'admin', manager: 'manager', user: 'user' }[roleFilter] ?? '';
+          return (
           <div className="att-table-wrap">
+            {filtered.length === 0 && (
+              <div className="att-empty">No {roleLabel} users found.</div>
+            )}
+            {filtered.length > 0 && (
             <table className="att-table">
               <thead>
                 <tr><th>Email</th><th>Role</th><th>Created</th><th></th></tr>
               </thead>
               <tbody>
-                {users.filter((u) => roleFilter === 'all' || u.role === roleFilter).map((u) => (
+                {filtered.map((u) => (
                   <tr key={u.id}>
                     <td>
                       {u.email}
@@ -244,8 +256,10 @@ function UsersTab({ currentUser, onUsersChange }) {
                 ))}
               </tbody>
             </table>
+            )}
           </div>
-        )}
+          );
+        })()}
       </div>
     </div>
   );
