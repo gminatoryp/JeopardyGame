@@ -699,6 +699,7 @@ function MembersTab({ members, setMembers }) {
   const [importLoading, setImportLoading] = useState(false);
   const [showCsvPanel, setShowCsvPanel] = useState(false);
   const [search, setSearch] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
   const fileRef = useRef(null);
 
   async function refresh() {
@@ -856,27 +857,40 @@ function MembersTab({ members, setMembers }) {
       </div>
 
       {members.length > 0 && (
-        <input
-          className="att-input att-members-search"
-          type="search"
-          placeholder="Search by first name, last name, or email…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+        <div className="att-members-filters">
+          <input
+            className="att-input att-members-search"
+            type="search"
+            placeholder="Search by first name, last name, or email…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <select
+            className="att-select att-members-role-filter"
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value)}
+          >
+            <option value="all">All roles</option>
+            {MEMBER_ROLES.map((r) => (
+              <option key={r} value={r}>{r}</option>
+            ))}
+          </select>
+        </div>
       )}
 
       {members.length === 0 ? (
         <div className="att-empty">No members yet. Add members above or import a CSV.</div>
       ) : (() => {
         const q = search.trim().toLowerCase();
-        const filtered = q
-          ? members.filter(
-              (m) =>
-                m.firstName.toLowerCase().includes(q) ||
-                m.lastName.toLowerCase().includes(q) ||
-                m.email.toLowerCase().includes(q)
-            )
-          : members;
+        const filtered = members.filter((m) => {
+          const matchesSearch = !q ||
+            m.firstName.toLowerCase().includes(q) ||
+            m.lastName.toLowerCase().includes(q) ||
+            m.email.toLowerCase().includes(q);
+          const matchesRole = roleFilter === 'all' || (m.memberRole || 'User') === roleFilter;
+          return matchesSearch && matchesRole;
+        });
+        const noMatch = q || roleFilter !== 'all';
         return (
         <div className="att-table-wrap">
           <table className="att-table">
@@ -885,7 +899,7 @@ function MembersTab({ members, setMembers }) {
             </thead>
             <tbody>
               {filtered.length === 0 ? (
-                <tr><td colSpan={6} style={{ textAlign: 'center', color: '#a0aec0', padding: '1.5rem' }}>No members match "{search}"</td></tr>
+                <tr><td colSpan={6} style={{ textAlign: 'center', color: '#a0aec0', padding: '1.5rem' }}>{noMatch ? 'No members match the current filters.' : 'No members yet.'}</td></tr>
               ) : filtered.map((m, i) => (
                 <tr key={m.id}>
                   <td>{i + 1}</td>

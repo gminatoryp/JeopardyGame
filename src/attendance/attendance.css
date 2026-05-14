@@ -91,9 +91,22 @@
   padding: 0.4rem 0.75rem;
 }
 
+.att-members-filters {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
 .att-members-search {
-  width: 100%;
-  max-width: 420px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.att-members-role-filter {
+  flex: unset;
+  min-width: unset;
+  width: 130px;
 }
 
 .att-members-toolbar {
