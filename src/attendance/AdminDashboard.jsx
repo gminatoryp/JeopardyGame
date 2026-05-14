@@ -213,7 +213,7 @@ function UsersTab({ currentUser }) {
 }
 
 // ── Settings tab ─────────────────────────────────────────────
-function SettingsTab() {
+function SettingsTab({ role }) {
   const [config, setConfig] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -341,12 +341,19 @@ function SettingsTab() {
         </p>
 
         <div className="att-geo-actions">
-          <button
-            className="att-btn att-btn-primary"
-            onClick={() => setShowManual((v) => !v)}
-          >
-            {showManual ? 'Hide coordinates' : '✏️ Edit Coordinates'}
-          </button>
+          {role === 'admin' && (
+            <button
+              className="att-btn att-btn-primary"
+              onClick={() => {
+                if (showManual) { setShowManual(false); return; }
+                if (window.confirm('Are you sure you want to edit the church coordinates?')) {
+                  setShowManual(true);
+                }
+              }}
+            >
+              {showManual ? 'Hide coordinates' : '✏️ Edit Coordinates'}
+            </button>
+          )}
           <button
             className="att-text-btn att-text-btn-small"
             onClick={handleUseMyLocation}
@@ -691,6 +698,7 @@ function MembersTab({ members, setMembers }) {
   const [csvSuccess, setCsvSuccess] = useState('');
   const [importLoading, setImportLoading] = useState(false);
   const [showCsvPanel, setShowCsvPanel] = useState(false);
+  const [search, setSearch] = useState('');
   const fileRef = useRef(null);
 
   async function refresh() {
@@ -847,16 +855,38 @@ function MembersTab({ members, setMembers }) {
         </div>
       </div>
 
+      {members.length > 0 && (
+        <input
+          className="att-input att-members-search"
+          type="search"
+          placeholder="Search by first name, last name, or email…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      )}
+
       {members.length === 0 ? (
         <div className="att-empty">No members yet. Add members above or import a CSV.</div>
-      ) : (
+      ) : (() => {
+        const q = search.trim().toLowerCase();
+        const filtered = q
+          ? members.filter(
+              (m) =>
+                m.firstName.toLowerCase().includes(q) ||
+                m.lastName.toLowerCase().includes(q) ||
+                m.email.toLowerCase().includes(q)
+            )
+          : members;
+        return (
         <div className="att-table-wrap">
           <table className="att-table">
             <thead>
               <tr><th>#</th><th>First Name</th><th>Last Name</th><th>Email</th><th>Role</th><th></th></tr>
             </thead>
             <tbody>
-              {members.map((m, i) => (
+              {filtered.length === 0 ? (
+                <tr><td colSpan={6} style={{ textAlign: 'center', color: '#a0aec0', padding: '1.5rem' }}>No members match "{search}"</td></tr>
+              ) : filtered.map((m, i) => (
                 <tr key={m.id}>
                   <td>{i + 1}</td>
                   <td>{m.firstName}</td>
@@ -884,7 +914,8 @@ function MembersTab({ members, setMembers }) {
             </tbody>
           </table>
         </div>
-      )}
+        );
+      })()}
     </div>
   );
 }
@@ -1249,7 +1280,7 @@ export default function AdminDashboard({ user, role, onLogout }) {
       )}
 
       {/* Settings tab */}
-      {activeTab === 'settings' && <SettingsTab />}
+      {activeTab === 'settings' && <SettingsTab role={role} />}
 
       {/* Records tab */}
       {activeTab === 'records' && (

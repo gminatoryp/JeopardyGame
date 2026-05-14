@@ -91,6 +91,11 @@
   padding: 0.4rem 0.75rem;
 }
 
+.att-members-search {
+  width: 100%;
+  max-width: 420px;
+}
+
 .att-members-toolbar {
   display: flex;
   justify-content: space-between;
