@@ -62,7 +62,7 @@ function ConfirmModal({ message, confirmLabel = 'Remove', onConfirm, onCancel })
 }
 
 // ── Users tab (admin only) ────────────────────────────────────
-function UsersTab({ currentUser }) {
+function UsersTab({ currentUser, onUsersChange }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [addEmail, setAddEmail] = useState('');
@@ -71,10 +71,12 @@ function UsersTab({ currentUser }) {
   const [addError, setAddError] = useState('');
   const [addLoading, setAddLoading] = useState(false);
   const [addSuccess, setAddSuccess] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
 
   async function refresh() {
     const u = await getAllUsers();
     setUsers(u);
+    onUsersChange?.(u);
   }
 
   useEffect(() => {
@@ -177,7 +179,19 @@ function UsersTab({ currentUser }) {
       </div>
 
       <div className="att-users-list">
-        <span className="att-members-count">{users.length} user{users.length !== 1 ? 's' : ''}</span>
+        <div className="att-members-toolbar">
+          <span className="att-members-count">{users.length} user{users.length !== 1 ? 's' : ''}</span>
+          <select
+            className="att-select att-members-role-filter"
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value)}
+          >
+            <option value="all">All roles</option>
+            <option value="admin">Admin</option>
+            <option value="manager">Manager</option>
+            <option value="user">User</option>
+          </select>
+        </div>
         {users.length === 0 ? (
           <div className="att-empty">No users found.</div>
         ) : (
@@ -187,7 +201,7 @@ function UsersTab({ currentUser }) {
                 <tr><th>Email</th><th>Role</th><th>Created</th><th></th></tr>
               </thead>
               <tbody>
-                {users.map((u) => (
+                {users.filter((u) => roleFilter === 'all' || u.role === roleFilter).map((u) => (
                   <tr key={u.id}>
                     <td>
                       {u.email}
@@ -706,7 +720,18 @@ function DashboardTab({ members, records, loading }) {
 }
 
 // ── Members tab ───────────────────────────────────────────────
-function MembersTab({ members, setMembers }) {
+function MembersTab({ members, setMembers, dashboardUsers = [] }) {
+  // Build a lookup: email → dashboard role (capitalized) for users who have login access
+  const userRoleByEmail = Object.fromEntries(
+    dashboardUsers.map((u) => [
+      u.email.toLowerCase(),
+      u.role.charAt(0).toUpperCase() + u.role.slice(1),
+    ])
+  );
+  // Effective role: dashboard role takes precedence over memberRole field
+  function effectiveRole(m) {
+    return userRoleByEmail[m.email.toLowerCase()] ?? m.memberRole ?? 'User';
+  }
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -916,7 +941,7 @@ function MembersTab({ members, setMembers }) {
             m.firstName.toLowerCase().includes(q) ||
             m.lastName.toLowerCase().includes(q) ||
             m.email.toLowerCase().includes(q);
-          const matchesRole = roleFilter === 'all' || (m.memberRole || 'User') === roleFilter;
+          const matchesRole = roleFilter === 'all' || effectiveRole(m) === roleFilter;
           return matchesSearch && matchesRole;
         });
         const noMatch = q || roleFilter !== 'all';
@@ -936,23 +961,29 @@ function MembersTab({ members, setMembers }) {
                   <td>{m.lastName}</td>
                   <td>{m.email}</td>
                   <td>
-                    <select
-                      className="att-select att-role-select"
-                      value={m.memberRole || 'User'}
-                      onChange={async (e) => {
-                        const newRole = e.target.value;
-                        try {
-                          await updateMemberRole(m.id, newRole);
-                          setMembers((prev) =>
-                            prev.map((x) => x.id === m.id ? { ...x, memberRole: newRole } : x)
-                          );
-                        } catch {
-                          alert('Failed to update role. Please try again.');
-                        }
-                      }}
-                    >
-                      {MEMBER_ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
-                    </select>
+                    {userRoleByEmail[m.email.toLowerCase()] ? (
+                      <span className={`att-role-badge att-role-${effectiveRole(m).toLowerCase()}`}>
+                        {effectiveRole(m)}
+                      </span>
+                    ) : (
+                      <select
+                        className="att-select att-role-select"
+                        value={m.memberRole || 'User'}
+                        onChange={async (e) => {
+                          const newRole = e.target.value;
+                          try {
+                            await updateMemberRole(m.id, newRole);
+                            setMembers((prev) =>
+                              prev.map((x) => x.id === m.id ? { ...x, memberRole: newRole } : x)
+                            );
+                          } catch {
+                            alert('Failed to update role. Please try again.');
+                          }
+                        }}
+                      >
+                        {MEMBER_ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
+                      </select>
+                    )}
                   </td>
                   <td>
                     <button
@@ -1128,6 +1159,7 @@ export default function AdminDashboard({ user, role, onLogout }) {
   const [records, setRecords] = useState([]);
   const [members, setMembers] = useState([]);
   const [membersLoading, setMembersLoading] = useState(true);
+  const [dashboardUsers, setDashboardUsers] = useState([]);
   const [activeTab, setActiveTab] = useState(allowedTabs[0]);
   const [copied, setCopied] = useState(false);
   const [imgCopied, setImgCopied] = useState(false);
@@ -1151,6 +1183,10 @@ export default function AdminDashboard({ user, role, onLogout }) {
       setMembers(m);
       setMembersLoading(false);
     });
+  }, []);
+
+  useEffect(() => {
+    getAllUsers().then(setDashboardUsers);
   }, []);
 
   useEffect(() => {
@@ -1324,7 +1360,7 @@ export default function AdminDashboard({ user, role, onLogout }) {
 
       {/* Members tab */}
       {activeTab === 'members' && (
-        <MembersTab members={members} setMembers={setMembers} />
+        <MembersTab members={members} setMembers={setMembers} dashboardUsers={dashboardUsers} />
       )}
 
       {/* Reports tab */}
@@ -1377,7 +1413,7 @@ export default function AdminDashboard({ user, role, onLogout }) {
       )}
 
       {/* Users tab (admin only) */}
-      {activeTab === 'users' && <UsersTab currentUser={user} />}
+      {activeTab === 'users' && <UsersTab currentUser={user} onUsersChange={setDashboardUsers} />}
     </div>
   );
 }
