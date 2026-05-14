@@ -638,8 +638,29 @@
 }
 
 .att-member-email {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: #a0aec0;
+}
+
+.att-member-role-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 2px;
+  flex-wrap: wrap;
+}
+
+.att-member-role-badge {
+  display: inline-block;
+  padding: 0.05rem 0.4rem;
+  background: #edf2f7;
+  color: #4a5568;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
 }
 
 .att-check-cell {

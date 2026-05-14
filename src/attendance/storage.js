@@ -98,6 +98,10 @@ export async function removeMember(id) {
   await deleteDoc(doc(db, 'members', id));
 }
 
+export async function updateMemberRole(id, memberRole) {
+  await setDoc(doc(db, 'members', id), { memberRole }, { merge: true });
+}
+
 export async function clearAllMembers() {
   const snap = await getDocs(MEMBERS_COL);
   const batch = writeBatch(db);
