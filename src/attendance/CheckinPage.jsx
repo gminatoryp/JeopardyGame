@@ -47,6 +47,8 @@ function QRScanner({ onResult }) {
   );
 }
 
+const STORAGE_KEY = 'ibc_checkin_info';
+
 // ── Check-in form ─────────────────────────────────────────────
 function CheckinForm({ token, onSuccess }) {
   const [firstName, setFirstName] = useState('');
@@ -56,9 +58,20 @@ function CheckinForm({ token, onSuccess }) {
   const [loading, setLoading] = useState(false);
   const [geoStatus, setGeoStatus] = useState('');
   const [noMembers, setNoMembers] = useState(false);
+  const [remembered, setRemembered] = useState(false);
 
   useEffect(() => {
     getMembers().then((m) => setNoMembers(m.length === 0));
+    // Pre-fill from last successful check-in on this device
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if (saved?.firstName) {
+        setFirstName(saved.firstName);
+        setLastName(saved.lastName);
+        setEmail(saved.email);
+        setRemembered(true);
+      }
+    } catch { /* ignore */ }
   }, []);
 
   async function handleSubmit(e) {
@@ -139,6 +152,15 @@ function CheckinForm({ token, onSuccess }) {
         timestamp: ts,
       });
 
+      // Save info for next visit so the form is pre-filled
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          firstName: member.firstName,
+          lastName: member.lastName,
+          email: member.email,
+        }));
+      } catch { /* ignore */ }
+
       // Signal success immediately before any optional logging
       onSuccess({ firstName: member.firstName, lastName: member.lastName, weekStart: token.weekStart, timestamp: ts });
 
@@ -167,6 +189,23 @@ function CheckinForm({ token, onSuccess }) {
           No member list has been set up yet. Please contact your instructor.
         </p>
       ) : (
+        {remembered && (
+          <div className="att-remembered-bar">
+            <span>Welcome back, {firstName}!</span>
+            <button
+              type="button"
+              className="att-text-btn"
+              style={{ fontSize: '0.8rem' }}
+              onClick={() => {
+                localStorage.removeItem(STORAGE_KEY);
+                setFirstName(''); setLastName(''); setEmail('');
+                setRemembered(false);
+              }}
+            >
+              Not you?
+            </button>
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="att-form">
           <label className="att-label">First Name</label>
           <input

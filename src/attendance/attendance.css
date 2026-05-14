@@ -1092,6 +1092,21 @@
   white-space: nowrap;
 }
 
+/* ── Remembered member bar ── */
+.att-remembered-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f0fff4;
+  border: 1px solid #c6f6d5;
+  border-radius: 8px;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.875rem;
+  color: #276749;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
 /* ── Check-in timestamp ── */
 .att-checkin-timestamp {
   font-size: 0.82rem;
