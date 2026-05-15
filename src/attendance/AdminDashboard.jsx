@@ -580,6 +580,7 @@ function getAllSundayWeekStarts() {
 function DashboardTab({ members, records, loading }) {
   const [colorFilter, setColorFilter] = useState('all');
   const [memberSearch, setMemberSearch] = useState('');
+  const [sortDir, setSortDir] = useState('asc');
 
   // Always show all 2026 Sundays; merge with any extra weekStarts from actual records
   const sundayWeeks = getAllSundayWeekStarts();
@@ -593,16 +594,21 @@ function DashboardTab({ members, records, loading }) {
     lookup[r.email][r.weekStart] = r;
   }
 
-  const filteredMembers = members.filter((m) => {
-    const q = memberSearch.toLowerCase();
-    const matchesSearch = !q ||
-      m.firstName.toLowerCase().includes(q) ||
-      m.lastName.toLowerCase().includes(q) ||
-      m.email.toLowerCase().includes(q);
-    const matchesColor = colorFilter === 'all' ||
-      getMemberStatus(m.email, weeks, lookup) === (colorFilter === 'none' ? null : colorFilter);
-    return matchesSearch && matchesColor;
-  });
+  const filteredMembers = members
+    .filter((m) => {
+      const q = memberSearch.toLowerCase();
+      const matchesSearch = !q ||
+        m.firstName.toLowerCase().includes(q) ||
+        m.lastName.toLowerCase().includes(q) ||
+        m.email.toLowerCase().includes(q);
+      const matchesColor = colorFilter === 'all' ||
+        getMemberStatus(m.email, weeks, lookup) === (colorFilter === 'none' ? null : colorFilter);
+      return matchesSearch && matchesColor;
+    })
+    .sort((a, b) => {
+      const cmp = a.lastName.localeCompare(b.lastName) || a.firstName.localeCompare(b.firstName);
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
 
   function handleExport() {
     const header = ['Member', 'Email', ...weeks.map((w) => formatSundayLabel(w)), 'Total', 'Attendance %'].join(',');
@@ -683,7 +689,9 @@ function DashboardTab({ members, records, loading }) {
         <table className="att-table att-matrix-table">
           <thead>
             <tr>
-              <th className="att-name-th">Member</th>
+              <th className="att-name-th" style={{ cursor: 'pointer', userSelect: 'none' }} onClick={() => setSortDir(d => d === 'asc' ? 'desc' : 'asc')}>
+                Member {sortDir === 'asc' ? '↑' : '↓'}
+              </th>
               {weeks.map((w) => (
                 <th key={w} className="att-week-th">
                   <div>{formatSundayLabel(w)}</div>
