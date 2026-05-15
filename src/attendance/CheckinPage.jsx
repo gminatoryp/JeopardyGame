@@ -250,7 +250,8 @@ function CheckinForm({ token, onSuccess }) {
           <button className="att-btn att-btn-primary" type="submit" disabled={loading}>
             {loading ? 'Verifying…' : 'Submit Attendance'}
           </button>
-        </form>
+          </form>
+        </>
       )}
     </div>
   );
