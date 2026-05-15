@@ -194,24 +194,25 @@ function CheckinForm({ token, onSuccess }) {
           No member list has been set up yet. Please contact your instructor.
         </p>
       ) : (
-        {remembered && (
-          <div className="att-remembered-bar">
-            <span>Welcome back, {firstName}!</span>
-            <button
-              type="button"
-              className="att-text-btn"
-              style={{ fontSize: '0.8rem' }}
-              onClick={() => {
-                localStorage.removeItem(STORAGE_KEY);
-                setFirstName(''); setLastName(''); setEmail('');
-                setRemembered(false);
-              }}
-            >
-              Not you?
-            </button>
-          </div>
-        )}
-        <form onSubmit={handleSubmit} className="att-form">
+        <>
+          {remembered && (
+            <div className="att-remembered-bar">
+              <span>Welcome back, {firstName}!</span>
+              <button
+                type="button"
+                className="att-text-btn"
+                style={{ fontSize: '0.8rem' }}
+                onClick={() => {
+                  localStorage.removeItem(STORAGE_KEY);
+                  setFirstName(''); setLastName(''); setEmail('');
+                  setRemembered(false);
+                }}
+              >
+                Not you?
+              </button>
+            </div>
+          )}
+          <form onSubmit={handleSubmit} className="att-form">
           <label className="att-label">First Name</label>
           <input
             className="att-input"
