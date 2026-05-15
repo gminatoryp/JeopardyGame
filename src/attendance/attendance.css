@@ -597,6 +597,7 @@
 }
 
 .att-matrix-table {
+  width: max-content;
   min-width: 100%;
   white-space: nowrap;
 }

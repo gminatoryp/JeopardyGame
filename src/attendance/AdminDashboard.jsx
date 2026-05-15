@@ -579,6 +579,7 @@ function getAllSundayWeekStarts() {
 // ── Dashboard tab ─────────────────────────────────────────────
 function DashboardTab({ members, records, loading }) {
   const [colorFilter, setColorFilter] = useState('all');
+  const [memberSearch, setMemberSearch] = useState('');
 
   // Always show all 2026 Sundays; merge with any extra weekStarts from actual records
   const sundayWeeks = getAllSundayWeekStarts();
@@ -592,9 +593,16 @@ function DashboardTab({ members, records, loading }) {
     lookup[r.email][r.weekStart] = r;
   }
 
-  const filteredMembers = colorFilter === 'all'
-    ? members
-    : members.filter((m) => getMemberStatus(m.email, weeks, lookup) === (colorFilter === 'none' ? null : colorFilter));
+  const filteredMembers = members.filter((m) => {
+    const q = memberSearch.toLowerCase();
+    const matchesSearch = !q ||
+      m.firstName.toLowerCase().includes(q) ||
+      m.lastName.toLowerCase().includes(q) ||
+      m.email.toLowerCase().includes(q);
+    const matchesColor = colorFilter === 'all' ||
+      getMemberStatus(m.email, weeks, lookup) === (colorFilter === 'none' ? null : colorFilter);
+    return matchesSearch && matchesColor;
+  });
 
   function handleExport() {
     const header = ['Member', 'Email', ...weeks.map((w) => formatSundayLabel(w)), 'Total', 'Attendance %'].join(',');
@@ -649,6 +657,16 @@ function DashboardTab({ members, records, loading }) {
             Export CSV
           </button>
         </div>
+      </div>
+
+      <div className="att-members-filters" style={{ marginBottom: '0.75rem' }}>
+        <input
+          className="att-input att-members-search"
+          type="text"
+          placeholder="Search members by name or email…"
+          value={memberSearch}
+          onChange={(e) => setMemberSearch(e.target.value)}
+        />
       </div>
 
       {/* Legend */}
