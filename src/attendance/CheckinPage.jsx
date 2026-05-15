@@ -83,6 +83,17 @@ function CheckinForm({ token, onSuccess }) {
       return;
     }
 
+    // ── Sunday-morning check ────────────────────────────────
+    const now = new Date();
+    const day = now.getDay();      // 0 = Sunday
+    const hour = now.getHours();   // 0–23
+    const CHECKIN_START = 6;       // 6:00 AM
+    const CHECKIN_END   = 14;      // 2:00 PM
+    if (day !== 0 || hour < CHECKIN_START || hour >= CHECKIN_END) {
+      setError('Check-in is only available on Sunday mornings between 6:00 AM and 2:00 PM.');
+      return;
+    }
+
     setLoading(true);
     try {
       // ── Geofence check ──────────────────────────────────────
