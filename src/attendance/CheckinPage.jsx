@@ -87,7 +87,7 @@ function CheckinForm({ token, onSuccess }) {
     try {
       // ── Geofence check ──────────────────────────────────────
       const geo = await getGeofenceConfig().catch(() => ({ enabled: false }));
-      if (geo.enabled) {
+      if (geo.enabled || geo.lat) {
         if (!geo.lat || !geo.lon) {
           setError('Location check is enabled but the church location has not been set. Please contact your instructor.');
           setLoading(false);
@@ -107,10 +107,11 @@ function CheckinForm({ token, onSuccess }) {
         const distMiles = getDistanceMiles(latitude, longitude, geo.lat, geo.lon);
         setGeoStatus('');
         if (distMiles > geo.radiusMiles) {
-          const feet = Math.round(distMiles * 5280);
-          const limit = Math.round(geo.radiusMiles * 5280);
+          const distDisplay = distMiles >= 1
+            ? `${distMiles.toFixed(1)} miles`
+            : `${Math.round(distMiles * 5280)} ft`;
           setError(
-            `You must be at the church to check in. You are approximately ${feet > 5280 ? `${(distMiles).toFixed(1)} miles` : `${feet} ft`} away (limit: ${limit} ft).`
+            `Cannot check in: you are outside the church's allowed radius. You are ${distDisplay} away from the church location.`
           );
           setLoading(false);
           return;
