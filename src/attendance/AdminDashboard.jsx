@@ -1186,6 +1186,7 @@ const ACTION_META = {
   qr_regenerated:           { label: 'QR Regenerated',  color: '#6b46c1', bg: '#faf5ff' },
   geofence_toggled:         { label: 'Geofence',         color: '#4a5568', bg: '#f7fafc' },
   geofence_location_changed:{ label: 'Location Updated', color: '#4a5568', bg: '#f7fafc' },
+  checkin_blocked:          { label: 'Blocked',          color: '#c05621', bg: '#fffaf0' },
 };
 
 function ActivityLogTab() {
@@ -1197,7 +1198,7 @@ function ActivityLogTab() {
   }, []);
 
   const filtered = filter === 'all' ? log
-    : filter === 'checkins' ? log.filter((e) => e.action === 'check_in')
+    : filter === 'checkins' ? log.filter((e) => e.action === 'check_in' || e.action === 'checkin_blocked')
     : log.filter((e) => e.action !== 'check_in');
 
   return (

@@ -113,6 +113,14 @@ function CheckinForm({ token, onSuccess }) {
           setError(
             `Cannot check in: you are outside the church's allowed radius. You are ${distDisplay} away from the church location.`
           );
+          setTimeout(() => {
+            const who = email.trim() || 'unknown';
+            logActivity(
+              'checkin_blocked',
+              `Check-in blocked: ${firstName.trim() || 'unknown'} ${lastName.trim() || ''} (${who}) was ${distDisplay} away from the church`,
+              who
+            ).catch(() => {});
+          }, 0);
           setLoading(false);
           return;
         }
