@@ -637,11 +637,16 @@ function DashboardTab({ members, records, loading }) {
 
   return (
     <div className="att-dashboard-panel">
-      <div className="att-records-toolbar">
-        <span className="att-members-count">
-          {filteredMembers.length} member{filteredMembers.length !== 1 ? 's' : ''} · {weeks.length} Sunday{weeks.length !== 1 ? 's' : ''} · {overallPct}% overall attendance
-        </span>
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+      <div className="att-records-toolbar" style={{ flexWrap: 'wrap', gap: '0.5rem' }}>
+        <input
+          className="att-input"
+          type="text"
+          placeholder="Search members…"
+          value={memberSearch}
+          onChange={(e) => setMemberSearch(e.target.value)}
+          style={{ flex: '1 1 180px', minWidth: '140px', marginBottom: 0 }}
+        />
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexShrink: 0 }}>
           <select
             className="att-select"
             style={{ minWidth: 'unset', flex: 'unset', width: 'auto' }}
@@ -658,15 +663,8 @@ function DashboardTab({ members, records, loading }) {
           </button>
         </div>
       </div>
-
-      <div className="att-members-filters" style={{ marginBottom: '0.75rem' }}>
-        <input
-          className="att-input att-members-search"
-          type="text"
-          placeholder="Search members by name or email…"
-          value={memberSearch}
-          onChange={(e) => setMemberSearch(e.target.value)}
-        />
+      <div style={{ fontSize: '0.8rem', color: '#718096', marginBottom: '0.5rem' }}>
+        {filteredMembers.length} member{filteredMembers.length !== 1 ? 's' : ''} · {weeks.length} Sunday{weeks.length !== 1 ? 's' : ''} · {overallPct}% overall attendance
       </div>
 
       {/* Legend */}

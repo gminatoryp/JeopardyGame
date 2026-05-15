@@ -450,8 +450,9 @@
 }
 
 .att-table-wrap {
-  overflow-x: auto;
-  max-width: 100vw;
+  overflow: auto;
+  max-width: 100%;
+  max-height: calc(100vh - 280px);
   -webkit-overflow-scrolling: touch;
 }
 
