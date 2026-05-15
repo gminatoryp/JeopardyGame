@@ -158,6 +158,7 @@
   background: #f0f4f8;
   font-family: system-ui, -apple-system, sans-serif;
   color: #1a202c;
+  overflow-x: hidden;
 }
 
 /* ── Card ── */
@@ -449,6 +450,8 @@
 
 .att-table-wrap {
   overflow-x: auto;
+  width: 100%;
+  -webkit-overflow-scrolling: touch;
 }
 
 .att-table {
