@@ -29,7 +29,7 @@ import {
   getHeadcount,
 } from './storage';
 
-const MEMBER_ROLES = ['Admin', 'Manager', 'User'];
+const MEMBER_ROLES = ['Admin', 'Manager', 'Counter', 'User'];
 
 const BASE_URL = `${window.location.origin}${import.meta.env.BASE_URL}`;
 
