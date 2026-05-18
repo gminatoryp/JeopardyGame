@@ -62,7 +62,7 @@ export function Hero() {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="text-5xl md:text-7xl font-bold text-white mb-4 tracking-tight"
         >
-          Alex Chen
+          George Park
         </motion.h1>
 
         {/* Typing animation */}
@@ -150,7 +150,7 @@ export function Hero() {
             <GitHubIcon size={22} />
           </a>
           <a
-            href="https://linkedin.com/in/alexchen"
+            href="https://linkedin.com/in/georgepark"
             target="_blank"
             rel="noopener noreferrer"
             className="text-slate-400 hover:text-white transition-colors"

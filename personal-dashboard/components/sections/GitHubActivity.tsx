@@ -23,7 +23,7 @@ const fallbackStats: GitHubStats = {
   following: 89,
   publicRepos: 47,
   totalStars: 624,
-  name: "Alex Chen",
+  name: "George Park",
   bio: "Senior SWE | Distributed Systems | Open Source",
   avatarUrl: "",
   login: "gminatoryp",

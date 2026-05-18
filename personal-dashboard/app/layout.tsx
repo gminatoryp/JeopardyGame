@@ -20,8 +20,8 @@ const siteUrl = "https://personal-dashboard.vercel.app";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Alex Chen — Senior Software Engineer",
-    template: "%s | Alex Chen",
+    default: "George Park — Senior Software Engineer",
+    template: "%s | George Park",
   },
   description:
     "Senior Software Engineer specializing in distributed systems, cloud infrastructure, and full-stack development. 5+ years building systems that scale to millions of users.",
@@ -36,32 +36,32 @@ export const metadata: Metadata = {
     "AWS",
     "Kubernetes",
   ],
-  authors: [{ name: "Alex Chen" }],
-  creator: "Alex Chen",
+  authors: [{ name: "George Park" }],
+  creator: "George Park",
   openGraph: {
     type: "website",
     locale: "en_US",
     url: siteUrl,
-    title: "Alex Chen — Senior Software Engineer",
+    title: "George Park — Senior Software Engineer",
     description:
       "Senior Software Engineer specializing in distributed systems, cloud infrastructure, and full-stack development.",
-    siteName: "Alex Chen Portfolio",
+    siteName: "George Park Portfolio",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Alex Chen — Senior Software Engineer",
+        alt: "George Park — Senior Software Engineer",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Alex Chen — Senior Software Engineer",
+    title: "George Park — Senior Software Engineer",
     description:
       "Senior Software Engineer specializing in distributed systems, cloud infrastructure, and full-stack development.",
     images: ["/og-image.png"],
-    creator: "@alexchen_dev",
+    creator: "@georgepark_dev",
   },
   robots: {
     index: true,
@@ -82,14 +82,14 @@ export const metadata: Metadata = {
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "Person",
-  name: "Alex Chen",
+  name: "George Park",
   jobTitle: "Senior Software Engineer",
   description:
     "Senior Software Engineer specializing in distributed systems and cloud infrastructure",
   url: siteUrl,
   sameAs: [
     "https://github.com/gminatoryp",
-    "https://linkedin.com/in/alexchen",
+    "https://linkedin.com/in/georgepark",
   ],
   knowsAbout: [
     "Distributed Systems",

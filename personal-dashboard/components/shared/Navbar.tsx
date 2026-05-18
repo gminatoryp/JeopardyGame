@@ -77,7 +77,7 @@ export function Navbar() {
             className="flex items-center gap-2 text-accent font-mono font-bold text-lg hover:opacity-80 transition-opacity"
           >
             <Code2 size={22} />
-            <span>AC</span>
+            <span>GP</span>
           </button>
 
           {/* Desktop Links */}

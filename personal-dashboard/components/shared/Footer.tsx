@@ -7,10 +7,10 @@ export function Footer() {
       <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2 text-accent font-mono font-bold">
           <Code2 size={18} />
-          <span>Alex Chen</span>
+          <span>George Park</span>
         </div>
         <p className="text-muted text-sm">
-          © {new Date().getFullYear()} Alex Chen. Built with Next.js & Tailwind CSS.
+          © {new Date().getFullYear()} George Park. Built with Next.js & Tailwind CSS.
         </p>
         <div className="flex items-center gap-4">
           <a
@@ -23,7 +23,7 @@ export function Footer() {
             <GitHubIcon size={18} />
           </a>
           <a
-            href="https://linkedin.com/in/alexchen"
+            href="https://linkedin.com/in/georgepark"
             target="_blank"
             rel="noopener noreferrer"
             className="text-muted hover:text-accent transition-colors"
@@ -32,7 +32,7 @@ export function Footer() {
             <LinkedInIcon size={18} />
           </a>
           <a
-            href="https://twitter.com/alexchen_dev"
+            href="https://twitter.com/georgepark_dev"
             target="_blank"
             rel="noopener noreferrer"
             className="text-muted hover:text-accent transition-colors"

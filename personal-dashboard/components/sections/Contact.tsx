@@ -67,10 +67,10 @@ export function Contact() {
               <div className="flex items-center gap-3 text-sm text-muted">
                 <Mail size={16} className="text-accent shrink-0" />
                 <a
-                  href="mailto:alex@example.com"
+                  href="mailto:george@example.com"
                   className="hover:text-accent transition-colors"
                 >
-                  alex@example.com
+                  george@example.com
                 </a>
               </div>
               <div className="flex items-center gap-3 text-sm text-muted">
@@ -91,12 +91,12 @@ export function Contact() {
                   },
                   {
                     icon: <LinkedInIcon size={20} />,
-                    href: "https://linkedin.com/in/alexchen",
+                    href: "https://linkedin.com/in/georgepark",
                     label: "LinkedIn",
                   },
                   {
                     icon: <TwitterXIcon size={20} />,
-                    href: "https://twitter.com/alexchen_dev",
+                    href: "https://twitter.com/georgepark_dev",
                     label: "Twitter/X",
                   },
                 ].map((s) => (
