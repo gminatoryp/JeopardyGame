@@ -992,6 +992,11 @@
   color: #6b46c1;
 }
 
+.att-role-counter {
+  background: #fffbeb;
+  color: #b7791f;
+}
+
 /* ── Header left (title + role badge) ── */
 .att-header-left {
   display: flex;

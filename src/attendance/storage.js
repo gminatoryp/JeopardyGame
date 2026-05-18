@@ -274,3 +274,19 @@ export function subscribeToActivityLog(callback) {
     (snap) => callback(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
   );
 }
+
+// ── Headcount ─────────────────────────────────────────────────
+
+export async function saveHeadcount(weekStart, count, recordedBy) {
+  await setDoc(doc(db, 'headcount', weekStart), {
+    weekStart,
+    count,
+    recordedBy,
+    timestamp: Date.now(),
+  });
+}
+
+export async function getHeadcount(weekStart) {
+  const snap = await getDoc(doc(db, 'headcount', weekStart));
+  return snap.exists() ? snap.data() : null;
+}

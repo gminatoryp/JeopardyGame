@@ -25,6 +25,8 @@ import {
   updateMemberRole,
   logActivity,
   subscribeToActivityLog,
+  saveHeadcount,
+  getHeadcount,
 } from './storage';
 
 const MEMBER_ROLES = ['Admin', 'Manager', 'User'];
@@ -196,6 +198,7 @@ function UsersTab({ currentUser, onUsersChange }) {
             <option value="all">All roles</option>
             <option value="admin">Admin only</option>
             <option value="manager">Manager only</option>
+            <option value="counter">Counter only</option>
             <option value="user">User only</option>
           </select>
         </div>
@@ -204,7 +207,7 @@ function UsersTab({ currentUser, onUsersChange }) {
         ) : (() => {
           const filtered = users.filter((u) =>
             roleFilter === 'all' ? true :
-            roleFilter === 'admin+manager' ? (u.role === 'admin' || u.role === 'manager') :
+            roleFilter === 'admin+manager' ? (u.role === 'admin' || u.role === 'manager' || u.role === 'counter') :
             u.role === roleFilter
           );
           const roleLabel = { admin: 'admin', manager: 'manager', user: 'user' }[roleFilter] ?? '';
@@ -238,6 +241,7 @@ function UsersTab({ currentUser, onUsersChange }) {
                         >
                           <option value="admin">Admin</option>
                           <option value="manager">Manager</option>
+                          <option value="counter">Counter</option>
                           <option value="user">User</option>
                         </select>
                       )}
@@ -1277,10 +1281,145 @@ function ActivityLogTab() {
   );
 }
 
+// ── Counter tab ───────────────────────────────────────────────
+function getCurrentWeekStart() {
+  const now = new Date();
+  const day = now.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + diff);
+  monday.setHours(0, 0, 0, 0);
+  return monday.toISOString().split('T')[0];
+}
+
+function CounterTab({ userEmail }) {
+  const [count, setCount] = useState('');
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [saved, setSaved] = useState(null);
+  const [existing, setExisting] = useState(null);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const weekStart = getCurrentWeekStart();
+
+  useEffect(() => {
+    getHeadcount(weekStart).then((h) => { if (h) setExisting(h); });
+  }, [weekStart]);
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    setError('');
+    const n = parseInt(count, 10);
+    if (!count || isNaN(n) || n < 0) { setError('Please enter a valid number.'); return; }
+    setShowConfirm(true);
+  }
+
+  async function handleConfirm() {
+    setLoading(true);
+    const n = parseInt(count, 10);
+    await saveHeadcount(weekStart, n, userEmail);
+    logActivity('headcount_recorded', `Head count of ${n} recorded for week of ${formatWeekLabel(weekStart)}`, userEmail).catch(() => {});
+    setSaved(n);
+    setExisting({ count: n, recordedBy: userEmail, weekStart });
+    setShowConfirm(false);
+    setCount('');
+    setLoading(false);
+  }
+
+  return (
+    <div className="att-dashboard-panel" style={{ maxWidth: 480 }}>
+      <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem' }}>Head Count</h2>
+      <p style={{ color: '#718096', marginBottom: '1.25rem' }}>Week of {formatWeekLabel(weekStart)}</p>
+      {existing && (
+        <div style={{ background: '#ebf4ff', border: '1px solid #bee3f8', borderRadius: 8, padding: '0.75rem 1rem', marginBottom: '1rem', fontSize: '0.9rem', color: '#2b6cb0' }}>
+          Current count: <strong>{existing.count}</strong> — recorded by {existing.recordedBy}
+        </div>
+      )}
+      <form onSubmit={handleSubmit}>
+        <label className="att-label">Total number of individuals present</label>
+        <input
+          className="att-input"
+          type="number"
+          min="0"
+          value={count}
+          onChange={(e) => setCount(e.target.value)}
+          placeholder="e.g. 142"
+          style={{ marginBottom: '1rem' }}
+        />
+        {error && <p className="att-error">{error}</p>}
+        {saved !== null && <p style={{ color: '#276749', marginBottom: '0.75rem' }}>✓ Count of {saved} saved successfully.</p>}
+        <button className="att-btn att-btn-primary" type="submit" disabled={loading}>Save Count</button>
+      </form>
+      {showConfirm && (
+        <div className="att-modal-overlay">
+          <div className="att-modal-box">
+            <p className="att-modal-message">You entered <strong>{count}</strong> attendees for week of {formatWeekLabel(weekStart)}. Is this correct?</p>
+            <div className="att-modal-actions">
+              <button className="att-btn att-btn-secondary att-modal-cancel" autoFocus onClick={() => setShowConfirm(false)}>Go back</button>
+              <button className="att-btn att-btn-primary" onClick={handleConfirm} disabled={loading}>Yes, save it</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Changelist tab ────────────────────────────────────────────
+const CHANGELIST = [
+  { id: 1,  text: 'Added geofencing with default church location (34.242711, -118.464373)' },
+  { id: 2,  text: 'Added Reports tab showing weekly and monthly attendance totals for 2026' },
+  { id: 3,  text: 'Made Edit Coordinates button admin-only with confirmation dialog' },
+  { id: 4,  text: 'Added member search by first name, last name, or email in Members tab' },
+  { id: 5,  text: 'Fixed member role dropdown not saving changes (stale event bug)' },
+  { id: 6,  text: 'Added role filter to Members tab' },
+  { id: 7,  text: 'Replaced ✕ remove button with small text button and confirmation modal (Cancel/Remove)' },
+  { id: 8,  text: 'Fixed Members tab not showing Admin role for users with dashboard accounts' },
+  { id: 9,  text: 'Added role filter to Users tab (defaults to Admins & Managers)' },
+  { id: 10, text: 'Added Activity Log tab (admin/manager only) with real-time action history' },
+  { id: 11, text: 'Added check-in timestamp to the success screen' },
+  { id: 12, text: 'Removed all Jeopardy game code from the codebase' },
+  { id: 13, text: 'Fixed "Something went wrong" error on check-in (Firestore rules + individual error handling)' },
+  { id: 14, text: 'Added localStorage pre-fill for returning members on check-in page' },
+  { id: 15, text: 'Enforced geofence whenever church coordinates are saved (not just when toggle is on)' },
+  { id: 16, text: 'Updated out-of-radius error message to display distance from church' },
+  { id: 17, text: 'Added blocked check-in attempts (outside radius) to Activity Log' },
+  { id: 18, text: 'Restricted check-in to Sunday mornings 6:00 AM – 2:00 PM' },
+  { id: 19, text: 'Added horizontal scrolling to Dashboard attendance matrix' },
+  { id: 20, text: 'Added member search box to Dashboard tab' },
+  { id: 21, text: 'Added ascending/descending sort by last name to Member column in Dashboard' },
+  { id: 22, text: 'Added Changelist tab (admin only) listing all feature requests' },
+  { id: 23, text: 'Added Counter role with headcount entry and confirmation dialog' },
+];
+
+function ChangelistTab() {
+  return (
+    <div className="att-dashboard-panel">
+      <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.25rem' }}>Change Log</h2>
+      <p style={{ color: '#718096', fontSize: '0.875rem', marginBottom: '1.25rem' }}>All feature requests made for this app, in order.</p>
+      <div className="att-table-wrap">
+        <table className="att-table">
+          <thead>
+            <tr><th style={{ width: 40 }}>#</th><th>Change</th></tr>
+          </thead>
+          <tbody>
+            {CHANGELIST.map((item) => (
+              <tr key={item.id}>
+                <td style={{ color: '#a0aec0', fontSize: '0.85rem' }}>{item.id}</td>
+                <td style={{ fontSize: '0.9rem' }}>{item.text}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 // ── Tab config by role ────────────────────────────────────────
 const TABS_BY_ROLE = {
-  admin:   ['qr', 'dashboard', 'members', 'records', 'reports', 'activity', 'settings', 'users'],
+  admin:   ['qr', 'dashboard', 'members', 'records', 'reports', 'activity', 'settings', 'users', 'changelist'],
   manager: ['qr', 'dashboard', 'members', 'records', 'reports', 'activity'],
+  counter: ['counter'],
   user:    ['dashboard', 'records'],
 };
 
@@ -1419,6 +1558,8 @@ export default function AdminDashboard({ user, role, onLogout }) {
     activity: 'Activity',
     settings: 'Settings',
     users: 'Users',
+    changelist: 'Change Log',
+    counter: 'Head Count',
   };
 
   return (
@@ -1508,6 +1649,8 @@ export default function AdminDashboard({ user, role, onLogout }) {
       {activeTab === 'activity' && <ActivityLogTab />}
 
       {activeTab === 'settings' && <SettingsTab role={role} currentUserEmail={user.email} />}
+      {activeTab === 'changelist' && <ChangelistTab />}
+      {activeTab === 'counter' && <CounterTab userEmail={user.email} />}
 
       {/* Records tab */}
       {activeTab === 'records' && (
