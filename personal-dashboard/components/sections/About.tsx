@@ -15,18 +15,18 @@ const fadeUp = {
 const values = [
   {
     icon: <Zap size={18} />,
-    title: "Systems thinking",
-    desc: "I design for failure modes first. Resilient, observable, and debuggable systems are non-negotiable.",
+    title: "Shift-left quality",
+    desc: "I embed into sprint planning and design reviews to surface testability requirements before a single line of code is written — preventing defects rather than just finding them.",
   },
   {
     icon: <Globe size={18} />,
-    title: "Scale-aware engineering",
-    desc: "Every design decision is weighed against the cost at 10x and 100x current load — before it becomes a problem.",
+    title: "Automation as a product",
+    desc: "Test suites should be maintained like production code. I build frameworks that are readable, maintainable, and integrated into CI/CD — not brittle scripts that rot.",
   },
   {
     icon: <BookOpen size={18} />,
-    title: "Documentation as code",
-    desc: "Architecture decisions are documented, diagrams are version-controlled, and runbooks are kept current.",
+    title: "Quality is a team sport",
+    desc: "The best QA outcome is a culture where developers own quality. I mentor teams, standardize practices, and make the right thing the easy thing.",
   },
 ];
 
@@ -34,7 +34,6 @@ export function About() {
   return (
     <section id="about" className="py-24 px-6">
       <div className="max-w-5xl mx-auto">
-        {/* Section header */}
         <motion.div
           initial="hidden"
           whileInView="visible"
@@ -50,7 +49,6 @@ export function About() {
         </motion.div>
 
         <div className="grid md:grid-cols-2 gap-12 items-start">
-          {/* Bio */}
           <div className="space-y-5">
             <motion.p
               initial="hidden"
@@ -60,17 +58,15 @@ export function About() {
               variants={fadeUp}
               className="text-muted leading-relaxed"
             >
-              I&apos;m a Senior Software Engineer with 5+ years of experience
-              building high-throughput distributed systems at scale. I&apos;ve
-              architected infrastructure serving over{" "}
-              <span className="text-foreground font-medium">
-                2M+ daily active users
-              </span>
-              , optimized database query performance by{" "}
-              <span className="text-foreground font-medium">65%</span>, and led
-              platform migrations that reduced cloud spend by{" "}
-              <span className="text-foreground font-medium">$1.2M annually</span>
-              .
+              I&apos;m a Senior QA Engineer with{" "}
+              <span className="text-foreground font-medium">20+ years</span> of
+              experience owning quality end-to-end across web, mobile, and
+              back-end platforms. I&apos;ve led quality engineering across{" "}
+              <span className="text-foreground font-medium">40+ software releases</span>{" "}
+              with zero critical production escapes, built automation frameworks
+              from the ground up that eliminated{" "}
+              <span className="text-foreground font-medium">75% of manual regression effort</span>,
+              and standardized QA practices across distributed engineering organizations.
             </motion.p>
             <motion.p
               initial="hidden"
@@ -80,11 +76,12 @@ export function About() {
               variants={fadeUp}
               className="text-muted leading-relaxed"
             >
-              My background spans backend engineering, cloud infrastructure, and
-              machine learning platforms. I&apos;ve worked across the stack —
-              from kernel-level performance profiling to building React dashboards
-              that process real-time data. I thrive in environments where
-              technical rigor and product velocity are both non-negotiable.
+              My background spans connected-vehicle platforms at Gemmacon,
+              enterprise automotive systems at Hyundai Motor America, and global
+              consumer security products at NortonLifeLock. I&apos;ve worked across
+              the full testing spectrum — from manual exploratory testing of
+              distributed microservices to building Python/Playwright automation
+              suites integrated into Jenkins and GitHub Actions pipelines.
             </motion.p>
             <motion.p
               initial="hidden"
@@ -94,17 +91,16 @@ export function About() {
               variants={fadeUp}
               className="text-muted leading-relaxed"
             >
-              Right now I&apos;m particularly excited about{" "}
+              Right now I&apos;m focused on{" "}
               <span className="text-foreground font-medium">
-                LLM infrastructure
+                quality engineering for modern cloud platforms
               </span>{" "}
-              — specifically building reliable, low-latency inference pipelines
-              and evaluation frameworks that make AI products production-ready
-              rather than just demo-ready.
+              — building scalable test infrastructure, integrating quality gates
+              into CI/CD pipelines, and helping engineering teams move fast
+              without breaking things.
             </motion.p>
           </div>
 
-          {/* Values */}
           <div className="space-y-4">
             <motion.p
               initial="hidden"
@@ -136,7 +132,6 @@ export function About() {
               </motion.div>
             ))}
 
-            {/* Quick stats */}
             <motion.div
               initial="hidden"
               whileInView="visible"
@@ -146,9 +141,9 @@ export function About() {
               className="grid grid-cols-3 gap-4 pt-2"
             >
               {[
-                { value: "5+", label: "Years exp." },
-                { value: "3", label: "Companies" },
-                { value: "12+", label: "Projects shipped" },
+                { value: "20+", label: "Years exp." },
+                { value: "40+", label: "Releases led" },
+                { value: "0", label: "Critical escapes" },
               ].map((stat) => (
                 <div
                   key={stat.label}

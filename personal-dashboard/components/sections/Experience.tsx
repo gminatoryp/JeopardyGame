@@ -8,54 +8,77 @@ interface Role {
   title: string;
   period: string;
   location: string;
-  type: string;
   bullets: string[];
   stack: string[];
   current?: boolean;
+  sabbatical?: boolean;
 }
 
 const experience: Role[] = [
   {
-    company: "Apex Systems",
-    title: "Senior Software Engineer — Platform",
-    period: "Jan 2023 – Present",
-    location: "San Francisco, CA",
-    type: "Full-time",
+    company: "Gemmacon",
+    title: "Senior Quality Engineer / Head of QA",
+    period: "May 2023 – Mar 2026",
+    location: "Long Beach, CA",
     current: true,
     bullets: [
-      "Architected a real-time event streaming platform processing 800M+ events/day, reducing pipeline latency from 6 hours to under 50ms P99.",
-      "Led migration of 40+ microservices to a Kubernetes-native service mesh, reducing inter-service latency by 32% and eliminating 99.7% of cascading failures.",
-      "Designed and shipped an internal developer platform (IDP) used by 40+ engineering teams, cutting environment setup time from 3 hours to 15 minutes.",
-      "Reduced cloud infrastructure spend by $1.2M annually through right-sizing, spot instance arbitrage, and automated idle resource cleanup.",
+      "Built automated test suites from the ground up using Python/Pytest and Playwright, taking scenarios from initial manual execution through full CI/CD integration — eliminating 75% of manual regression effort.",
+      "Acted as de-facto QA lead for 15+ engineers across multiple Agile squads; standardized practices and improved cross-team consistency across the connected-vehicle platform.",
+      "Designed system-level validation frameworks covering distributed service interactions, API integrations, and failure-mode analysis; proactively identified critical defects before release.",
+      "Led design and delivery of a modernized defect tracking system — introducing subscriptions, automated email notifications, contributor history views, and a streamlined field architecture.",
+      "Initiated and oversaw development of an internal vehicle reservation system providing real-time visibility into test fleet availability, eliminating scheduling conflicts where no prior tooling existed.",
     ],
-    stack: ["Go", "Kubernetes", "Kafka", "Terraform", "AWS", "Datadog"],
+    stack: ["Playwright", "Python/Pytest", "Postman", "JMeter", "Jenkins", "GitHub Actions", "JIRA", "CANoe", "VMware"],
   },
   {
-    company: "Meridian Health",
-    title: "Software Engineer — Backend",
-    period: "Jun 2021 – Dec 2022",
-    location: "New York, NY",
-    type: "Full-time",
+    company: "Hyundai Motor America",
+    title: "Senior QA Engineer",
+    period: "Mar 2022 – Apr 2023",
+    location: "Fountain Valley, CA",
     bullets: [
-      "Built a HIPAA-compliant data ingestion pipeline handling 4M+ patient records, with end-to-end encryption, audit logging, and field-level access controls.",
-      "Optimized critical PostgreSQL queries serving the patient portal, achieving a 65% reduction in P95 query latency through index tuning and query plan analysis.",
-      "Designed an event-driven notification system (Kafka + Go) that replaced polling, reducing server load by 45% and improving notification reliability to 99.97%.",
-      "Mentored 3 junior engineers; introduced bi-weekly design review sessions that improved RFC quality and reduced post-deploy incidents by 28%.",
+      "Served as Senior QA Lead for the Hyundai Canada team, owning overall testing execution across all releases; reduced redundant test cases by 15%, improving team efficiency.",
+      "Executed comprehensive REST API and backend service validation using Postman and SoapUI, crafting complex payloads to simulate real-world production traffic patterns.",
+      "Conducted performance and load testing with JMeter to validate system reliability under production-scale conditions; surfaced bottlenecks that informed infrastructure scaling decisions.",
+      "Designed regression and reliability test strategies that increased test coverage by 10% and reduced post-release incidents.",
     ],
-    stack: ["Python", "PostgreSQL", "FastAPI", "Redis", "Kafka", "Docker"],
+    stack: ["Postman", "SoapUI", "JMeter", "SQL", "JIRA", "Confluence"],
   },
   {
-    company: "DataFlow Labs",
-    title: "Software Engineer — Full Stack",
-    period: "Aug 2019 – May 2021",
-    location: "Austin, TX",
-    type: "Full-time",
+    company: "Professional Development Sabbatical",
+    title: "Full Stack Certificate — Coding Dojo",
+    period: "Mar 2021 – Mar 2022",
+    location: "Remote",
+    sabbatical: true,
     bullets: [
-      "Built a real-time analytics dashboard used by 200+ enterprise customers, handling 50K concurrent WebSocket connections with sub-100ms update latency.",
-      "Implemented a multi-tenant ML model serving infrastructure, reducing inference latency by 40% through model quantization and batch prediction caching.",
-      "Shipped 0→1 product features including alerting engine, custom dashboard builder, and API key management — all within first 6 months.",
+      "Completed intensive Full Stack Development Certificate at Coding Dojo, building proficiency in modern web development.",
+      "Upskilled in Playwright/TypeScript test automation, CI/CD pipeline integration, and full-stack engineering practices.",
     ],
-    stack: ["TypeScript", "React", "Node.js", "MongoDB", "Redis", "GCP"],
+    stack: ["JavaScript", "TypeScript", "Playwright", "HTML/CSS", "Python"],
+  },
+  {
+    company: "NortonLifeLock (formerly Symantec)",
+    title: "Principal SQA Analyst",
+    period: "Oct 2012 – Mar 2021",
+    location: "Culver City, CA",
+    bullets: [
+      "Led quality validation across 40+ software releases for global consumer security applications with zero critical escapes on monitored releases over nine years.",
+      "Improved QA team efficiency by ~30% through targeted process improvements, automation initiatives, and elimination of redundant manual testing activities.",
+      "Architected regression testing strategies and release validation plans adopted org-wide, directly reducing time-to-release.",
+      "Coordinated Agile QA practices with offshore teams across time zones, improving collaboration velocity and sprint predictability.",
+      "Mentored 10 junior QA engineers in test design, debugging, and stakeholder communication — several advanced to senior roles.",
+    ],
+    stack: ["JIRA", "Confluence", "Selenium", "SQL", "Agile/Scrum"],
+  },
+  {
+    company: "Symantec",
+    title: "SQA Lead",
+    period: "Sep 2009 – Oct 2012",
+    location: "Culver City, CA",
+    bullets: [
+      "Automated ~45% of legacy manual test cases, dramatically expanding regression coverage and freeing team bandwidth for exploratory testing.",
+      "Streamlined QA workflows and reduced redundant testing activities, improving overall team throughput and release cadence by ~20%.",
+    ],
+    stack: ["JIRA", "Selenium", "SQL", "Perforce"],
   },
 ];
 
@@ -76,9 +99,7 @@ export function Experience() {
           </h2>
         </motion.div>
 
-        {/* Timeline */}
         <div className="relative">
-          {/* Vertical line */}
           <div className="absolute left-3 top-2 bottom-2 w-px bg-navy-700/60" />
 
           <div className="space-y-10">
@@ -88,14 +109,15 @@ export function Experience() {
                 initial={{ opacity: 0, x: -30 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true, margin: "-80px" }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
+                transition={{ duration: 0.5, delay: i * 0.08 }}
                 className="relative pl-12"
               >
-                {/* Timeline dot */}
                 <div
                   className={`absolute left-0 top-2 w-7 h-7 rounded-full flex items-center justify-center border-2 ${
                     role.current
                       ? "border-accent bg-accent/20"
+                      : role.sabbatical
+                      ? "border-amber-500/50 bg-amber-500/10"
                       : "border-navy-600 bg-navy-800"
                   }`}
                 >
@@ -104,8 +126,13 @@ export function Experience() {
                   )}
                 </div>
 
-                {/* Content */}
-                <div className="border border-card-border bg-card rounded-xl p-6 hover:border-accent/20 transition-colors">
+                <div
+                  className={`border rounded-xl p-6 hover:border-accent/20 transition-colors ${
+                    role.sabbatical
+                      ? "border-amber-500/20 bg-amber-500/5"
+                      : "border-card-border bg-card"
+                  }`}
+                >
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-4">
                     <div>
                       <h3 className="font-bold text-foreground text-lg">
@@ -151,6 +178,32 @@ export function Experience() {
             ))}
           </div>
         </div>
+
+        {/* Education */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="mt-12 border border-card-border bg-card rounded-xl p-6"
+        >
+          <p className="text-xs font-mono text-accent mb-4">Education</p>
+          <div className="space-y-3">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="font-semibold text-foreground">B.S., Computer Information Systems</p>
+                <p className="text-sm text-muted">DeVry University</p>
+              </div>
+            </div>
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="font-semibold text-foreground">Full Stack Development Certificate</p>
+                <p className="text-sm text-muted">Coding Dojo</p>
+              </div>
+              <span className="text-sm text-muted shrink-0">2021</span>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </section>
   );

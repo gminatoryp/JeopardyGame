@@ -15,43 +15,43 @@ interface SkillCategory {
 
 const skillData: SkillCategory[] = [
   {
-    category: "Languages",
+    category: "Test Automation",
     skills: [
-      { name: "TypeScript / JavaScript", level: "Expert", proficiency: 95 },
-      { name: "Python", level: "Expert", proficiency: 90 },
-      { name: "Go", level: "Expert", proficiency: 88 },
-      { name: "Java / Kotlin", level: "Proficient", proficiency: 75 },
-      { name: "Rust", level: "Familiar", proficiency: 55 },
+      { name: "Playwright", level: "Expert", proficiency: 95 },
+      { name: "Python / Pytest", level: "Expert", proficiency: 92 },
+      { name: "Selenium", level: "Expert", proficiency: 88 },
+      { name: "JavaScript / TypeScript", level: "Proficient", proficiency: 78 },
+      { name: "JMeter (Performance)", level: "Proficient", proficiency: 80 },
     ],
   },
   {
-    category: "Frameworks",
+    category: "API & Backend Testing",
     skills: [
-      { name: "Next.js / React", level: "Expert", proficiency: 92 },
-      { name: "Node.js / Express", level: "Expert", proficiency: 90 },
-      { name: "FastAPI / Django", level: "Proficient", proficiency: 80 },
-      { name: "gRPC / Protobuf", level: "Proficient", proficiency: 78 },
-      { name: "GraphQL", level: "Proficient", proficiency: 75 },
+      { name: "Postman", level: "Expert", proficiency: 95 },
+      { name: "SoapUI", level: "Expert", proficiency: 88 },
+      { name: "REST API Validation", level: "Expert", proficiency: 92 },
+      { name: "SQL Data Validation", level: "Expert", proficiency: 85 },
+      { name: "Load & Performance Testing", level: "Proficient", proficiency: 80 },
     ],
   },
   {
-    category: "Cloud & Infrastructure",
+    category: "CI/CD & Tooling",
     skills: [
-      { name: "AWS (ECS, RDS, Lambda, S3)", level: "Expert", proficiency: 92 },
-      { name: "Kubernetes / Helm", level: "Expert", proficiency: 88 },
-      { name: "Terraform / Pulumi", level: "Proficient", proficiency: 82 },
-      { name: "Docker / Containerd", level: "Expert", proficiency: 90 },
-      { name: "Datadog / Grafana", level: "Proficient", proficiency: 78 },
+      { name: "GitHub Actions", level: "Proficient", proficiency: 80 },
+      { name: "Jenkins", level: "Proficient", proficiency: 78 },
+      { name: "GitHub / Perforce", level: "Expert", proficiency: 88 },
+      { name: "JIRA / Confluence", level: "Expert", proficiency: 95 },
+      { name: "VMware / CANoe", level: "Proficient", proficiency: 75 },
     ],
   },
   {
-    category: "Databases",
+    category: "Methodologies & Practices",
     skills: [
-      { name: "PostgreSQL", level: "Expert", proficiency: 92 },
-      { name: "Redis / Valkey", level: "Expert", proficiency: 88 },
-      { name: "Elasticsearch", level: "Proficient", proficiency: 78 },
-      { name: "MongoDB", level: "Proficient", proficiency: 75 },
-      { name: "Apache Kafka", level: "Proficient", proficiency: 80 },
+      { name: "Agile / Scrum", level: "Expert", proficiency: 92 },
+      { name: "Test Strategy & Planning", level: "Expert", proficiency: 95 },
+      { name: "BDD / SDLC", level: "Expert", proficiency: 88 },
+      { name: "Root-Cause Analysis", level: "Expert", proficiency: 90 },
+      { name: "Full Stack (HTML, CSS, Python, JS)", level: "Proficient", proficiency: 72 },
     ],
   },
 ];
@@ -85,7 +85,6 @@ export function Skills() {
           </h2>
         </motion.div>
 
-        {/* Legend */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}

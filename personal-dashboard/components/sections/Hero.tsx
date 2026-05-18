@@ -18,7 +18,6 @@ export function Hero() {
       id="hero"
       className="relative min-h-screen flex items-center justify-center overflow-hidden animated-gradient"
     >
-      {/* Background orbs */}
       {floatingOrbs.map((orb, i) => (
         <div
           key={i}
@@ -33,7 +32,6 @@ export function Hero() {
         />
       ))}
 
-      {/* Grid overlay */}
       <div
         className="absolute inset-0 opacity-[0.03] pointer-events-none"
         style={{
@@ -44,7 +42,6 @@ export function Hero() {
       />
 
       <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
-        {/* Status badge */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -55,7 +52,6 @@ export function Hero() {
           Open to new opportunities
         </motion.div>
 
-        {/* Name */}
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -65,7 +61,6 @@ export function Hero() {
           George Park
         </motion.h1>
 
-        {/* Typing animation */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -74,15 +69,15 @@ export function Hero() {
         >
           <TypeAnimation
             sequence={[
-              "Senior Software Engineer",
+              "Senior QA Engineer",
               2000,
-              "Distributed Systems Architect",
+              "Test Automation Architect",
               2000,
-              "Cloud Infrastructure Expert",
+              "Quality Engineering Leader",
               2000,
-              "Full-Stack Developer",
+              "API Testing Expert",
               2000,
-              "Open Source Contributor",
+              "CI/CD Quality Advocate",
               2000,
             ]}
             wrapper="span"
@@ -91,21 +86,19 @@ export function Hero() {
           />
         </motion.div>
 
-        {/* Value proposition */}
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
           className="text-lg md:text-xl text-slate-300 max-w-2xl mx-auto mb-10 leading-relaxed"
         >
-          I build distributed systems that scale to{" "}
-          <span className="text-accent font-semibold">millions of users</span>,
-          reduce infrastructure costs by{" "}
-          <span className="text-accent font-semibold">40%+</span>, and ship
-          products teams are proud of.
+          I build automation frameworks that eliminate manual testing bottlenecks,
+          catch critical defects before production, and give engineering teams the
+          confidence to{" "}
+          <span className="text-accent font-semibold">ship faster</span> — with{" "}
+          <span className="text-accent font-semibold">zero critical escapes</span>.
         </motion.p>
 
-        {/* CTAs */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -133,7 +126,6 @@ export function Hero() {
           </a>
         </motion.div>
 
-        {/* Social links */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -150,7 +142,7 @@ export function Hero() {
             <GitHubIcon size={22} />
           </a>
           <a
-            href="https://linkedin.com/in/georgepark"
+            href="https://linkedin.com/in/georgeparka1"
             target="_blank"
             rel="noopener noreferrer"
             className="text-slate-400 hover:text-white transition-colors"
@@ -161,7 +153,6 @@ export function Hero() {
         </motion.div>
       </div>
 
-      {/* Scroll indicator */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

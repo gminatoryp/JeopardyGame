@@ -14,55 +14,52 @@ interface Article {
 
 const articles: Article[] = [
   {
-    title: "Semantic Caching for LLMs: A Production Retrospective",
+    title: "Why 75% Automation Isn't the Goal — Coverage Quality Is",
     excerpt:
-      "How we achieved 67% cache hit rates on LLM API calls using pgvector embeddings and adaptive TTL — and the failure modes we didn't expect.",
-    date: "Mar 12, 2025",
-    readTime: "9 min read",
-    tags: ["LLM", "Caching", "PostgreSQL"],
-    url: "#",
-  },
-  {
-    title: "Building an Event Streaming Platform from Scratch",
-    excerpt:
-      "A systems-design deep dive into how we processed 800M+ daily events with sub-50ms P99 latency. From dual-write migration to backpressure signaling.",
-    date: "Jan 28, 2025",
-    readTime: "14 min read",
-    tags: ["Kafka", "Distributed Systems", "Go"],
-    url: "#",
-  },
-  {
-    title: "The Hidden Cost of Naive Kubernetes Autoscaling",
-    excerpt:
-      "HPA and VPA are not magic. Here's what we learned spending 3 months profiling our cluster — and the custom controller we built to fix it.",
-    date: "Nov 15, 2024",
-    readTime: "11 min read",
-    tags: ["Kubernetes", "Infrastructure", "Observability"],
-    url: "#",
-  },
-  {
-    title: "PostgreSQL Query Plans: What EXPLAIN ANALYZE is Really Telling You",
-    excerpt:
-      "Most engineers look at query plans without really understanding them. A practical guide to reading seq scans, index selection, and join strategies.",
-    date: "Sep 5, 2024",
+      "Converting manual tests to automated ones sounds like progress. But if you're automating the wrong tests, you're just creating a maintenance burden. Here's how I think about what to automate first.",
+    date: "Coming soon",
     readTime: "8 min read",
-    tags: ["PostgreSQL", "Performance", "Backend"],
+    tags: ["Test Automation", "Strategy"],
+    url: "#",
+  },
+  {
+    title: "Shift-Left QA: Getting Invited to the Design Meeting",
+    excerpt:
+      "The most impactful QA work happens before code is written. How I've embedded into sprint planning and architecture reviews to surface testability issues early — and why it matters more than any test suite.",
+    date: "Coming soon",
+    readTime: "6 min read",
+    tags: ["QA Process", "Agile"],
+    url: "#",
+  },
+  {
+    title: "API Testing Beyond Happy Paths: Simulating Real Production Traffic",
+    excerpt:
+      "Most API test suites validate the obvious cases. The bugs that make it to production are hiding in the edge cases. A practical guide to crafting payloads that actually stress your system.",
+    date: "Coming soon",
+    readTime: "10 min read",
+    tags: ["API Testing", "Postman"],
+    url: "#",
+  },
+  {
+    title: "Building a QA Culture Without the Authority to Mandate It",
+    excerpt:
+      "I've never had direct authority over developers — but I've consistently raised the quality bar across teams. Here's the influence playbook: from architecture reviews to pair debugging sessions.",
+    date: "Coming soon",
+    readTime: "7 min read",
+    tags: ["Leadership", "QA Culture"],
     url: "#",
   },
 ];
 
 const tagColors: Record<string, string> = {
-  LLM: "text-purple-400 bg-purple-400/10 border-purple-400/30",
-  Caching: "text-blue-400 bg-blue-400/10 border-blue-400/30",
-  PostgreSQL: "text-sky-400 bg-sky-400/10 border-sky-400/30",
-  Kafka: "text-orange-400 bg-orange-400/10 border-orange-400/30",
-  "Distributed Systems": "text-accent bg-accent/10 border-accent/30",
-  Go: "text-cyan-400 bg-cyan-400/10 border-cyan-400/30",
-  Kubernetes: "text-blue-500 bg-blue-500/10 border-blue-500/30",
-  Infrastructure: "text-emerald-400 bg-emerald-400/10 border-emerald-400/30",
-  Observability: "text-amber-400 bg-amber-400/10 border-amber-400/30",
-  Performance: "text-red-400 bg-red-400/10 border-red-400/30",
-  Backend: "text-slate-400 bg-slate-400/10 border-slate-400/30",
+  "Test Automation": "text-accent bg-accent/10 border-accent/30",
+  Strategy: "text-purple-400 bg-purple-400/10 border-purple-400/30",
+  "QA Process": "text-emerald-400 bg-emerald-400/10 border-emerald-400/30",
+  Agile: "text-sky-400 bg-sky-400/10 border-sky-400/30",
+  "API Testing": "text-orange-400 bg-orange-400/10 border-orange-400/30",
+  Postman: "text-orange-500 bg-orange-500/10 border-orange-500/30",
+  Leadership: "text-amber-400 bg-amber-400/10 border-amber-400/30",
+  "QA Culture": "text-rose-400 bg-rose-400/10 border-rose-400/30",
 };
 
 export function Blog() {
@@ -81,32 +78,28 @@ export function Blog() {
             Technical writing
           </h2>
           <p className="text-muted mt-3 max-w-xl">
-            I write about distributed systems, infrastructure, and hard-won
-            lessons from production. No tutorial rehashes — only things I&apos;ve
-            actually built.
+            Lessons from 20+ years in quality engineering — on automation strategy,
+            building QA culture, and the testing problems no one talks about.
           </p>
         </motion.div>
 
         <div className="grid md:grid-cols-2 gap-5">
           {articles.map((article, i) => (
-            <motion.a
+            <motion.div
               key={article.title}
-              href={article.url}
-              target="_blank"
-              rel="noopener noreferrer"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-60px" }}
               transition={{ duration: 0.4, delay: i * 0.08 }}
-              className="group block border border-card-border bg-card rounded-xl p-6 hover:border-accent/30 transition-all hover:shadow-lg hover:shadow-accent/5"
+              className="group block border border-card-border bg-card rounded-xl p-6 border-dashed"
             >
               <div className="flex items-start justify-between gap-3 mb-3">
-                <h3 className="font-semibold text-foreground leading-snug group-hover:text-accent transition-colors">
+                <h3 className="font-semibold text-foreground leading-snug">
                   {article.title}
                 </h3>
                 <ExternalLink
                   size={14}
-                  className="text-muted group-hover:text-accent transition-colors shrink-0 mt-0.5"
+                  className="text-muted/30 shrink-0 mt-0.5"
                 />
               </div>
 
@@ -127,7 +120,7 @@ export function Blog() {
                 ))}
               </div>
 
-              <div className="flex items-center gap-4 text-xs text-muted">
+              <div className="flex items-center gap-4 text-xs text-muted/50">
                 <span className="flex items-center gap-1.5">
                   <Calendar size={12} />
                   {article.date}
@@ -137,7 +130,7 @@ export function Blog() {
                   {article.readTime}
                 </span>
               </div>
-            </motion.a>
+            </motion.div>
           ))}
         </div>
       </div>

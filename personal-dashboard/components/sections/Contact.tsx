@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Mail, MapPin, Send, CheckCircle } from "lucide-react";
-import { GitHubIcon, LinkedInIcon, TwitterXIcon } from "@/components/shared/SocialIcons";
+import { GitHubIcon, LinkedInIcon } from "@/components/shared/SocialIcons";
 
 type FormState = "idle" | "loading" | "success" | "error";
 
@@ -14,7 +14,6 @@ export function Contact() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus("loading");
-    // Simulate submission — wire up to Resend or EmailJS in production
     await new Promise((r) => setTimeout(r, 1000));
     setStatus("success");
     setForm({ name: "", email: "", message: "" });
@@ -35,13 +34,12 @@ export function Contact() {
             Get in touch
           </h2>
           <p className="text-muted mt-3 max-w-xl">
-            I&apos;m selectively open to new opportunities and interesting
-            engineering challenges. No recruiters please — direct outreach only.
+            Open to senior QA engineering roles, quality leadership positions,
+            and interesting conversations about test automation and engineering culture.
           </p>
         </motion.div>
 
         <div className="grid md:grid-cols-2 gap-12">
-          {/* Info panel */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -49,7 +47,6 @@ export function Contact() {
             transition={{ duration: 0.5 }}
             className="space-y-8"
           >
-            {/* Status */}
             <div className="flex items-center gap-3 p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
               <div>
@@ -57,29 +54,27 @@ export function Contact() {
                   Open to opportunities
                 </p>
                 <p className="text-xs text-muted mt-0.5">
-                  Actively considering senior/staff IC and tech lead roles
+                  Actively considering Senior QA Engineer and Quality Engineering Lead roles
                 </p>
               </div>
             </div>
 
-            {/* Details */}
             <div className="space-y-4">
               <div className="flex items-center gap-3 text-sm text-muted">
                 <Mail size={16} className="text-accent shrink-0" />
                 <a
-                  href="mailto:george@example.com"
+                  href="mailto:park.y.george26@gmail.com"
                   className="hover:text-accent transition-colors"
                 >
-                  george@example.com
+                  park.y.george26@gmail.com
                 </a>
               </div>
               <div className="flex items-center gap-3 text-sm text-muted">
                 <MapPin size={16} className="text-accent shrink-0" />
-                San Francisco, CA (PST) — open to remote
+                Simi Valley, CA (PST) — open to remote
               </div>
             </div>
 
-            {/* Social */}
             <div>
               <p className="text-xs font-mono text-muted mb-4">Find me on</p>
               <div className="flex gap-4">
@@ -91,13 +86,8 @@ export function Contact() {
                   },
                   {
                     icon: <LinkedInIcon size={20} />,
-                    href: "https://linkedin.com/in/georgepark",
+                    href: "https://linkedin.com/in/georgeparka1",
                     label: "LinkedIn",
-                  },
-                  {
-                    icon: <TwitterXIcon size={20} />,
-                    href: "https://twitter.com/georgepark_dev",
-                    label: "Twitter/X",
                   },
                 ].map((s) => (
                   <a
@@ -114,17 +104,16 @@ export function Contact() {
               </div>
             </div>
 
-            {/* What I'm looking for */}
             <div className="border border-card-border bg-card rounded-xl p-5">
               <p className="text-sm font-mono text-accent mb-3">
                 What I&apos;m looking for
               </p>
               <ul className="space-y-2">
                 {[
-                  "Senior / Staff IC or Tech Lead roles",
-                  "High-impact distributed systems problems",
-                  "Strong eng culture (small teams, big scope)",
-                  "Remote or SF Bay Area",
+                  "Senior QA Engineer or Quality Engineering Lead",
+                  "Strong automation culture (Playwright, Python, CI/CD)",
+                  "Cloud-connected or distributed systems products",
+                  "Remote or Southern California (Simi Valley area)",
                 ].map((item) => (
                   <li key={item} className="flex items-center gap-2 text-sm text-muted">
                     <span className="text-accent">▸</span>
@@ -135,7 +124,6 @@ export function Contact() {
             </div>
           </motion.div>
 
-          {/* Contact form */}
           <motion.form
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -184,9 +172,7 @@ export function Contact() {
                     type="email"
                     required
                     value={form.email}
-                    onChange={(e) =>
-                      setForm({ ...form, email: e.target.value })
-                    }
+                    onChange={(e) => setForm({ ...form, email: e.target.value })}
                     placeholder="jane@company.com"
                     className="w-full px-4 py-3 rounded-lg border border-card-border bg-card text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/60 transition-colors text-sm"
                   />
@@ -199,9 +185,7 @@ export function Contact() {
                     required
                     rows={5}
                     value={form.message}
-                    onChange={(e) =>
-                      setForm({ ...form, message: e.target.value })
-                    }
+                    onChange={(e) => setForm({ ...form, message: e.target.value })}
                     placeholder="Tell me about the role or project..."
                     className="w-full px-4 py-3 rounded-lg border border-card-border bg-card text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/60 transition-colors text-sm resize-none"
                   />
@@ -209,7 +193,7 @@ export function Contact() {
 
                 {status === "error" && (
                   <p className="text-sm text-red-400">
-                    Something went wrong. Please try email instead.
+                    Something went wrong. Please email directly instead.
                   </p>
                 )}
 

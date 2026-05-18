@@ -10,7 +10,6 @@ interface Project {
   tagline: string;
   problem: string;
   metrics: { icon: React.ReactNode; label: string; value: string }[];
-  challenge: string;
   solution: string;
   stack: { name: string; color: string }[];
   demo?: string;
@@ -20,98 +19,85 @@ interface Project {
 
 const projects: Project[] = [
   {
-    name: "StreamScale",
-    tagline: "Real-time event processing platform",
+    name: "Python Automation Framework",
+    tagline: "End-to-end test automation for connected-vehicle platform",
     problem:
-      "Legacy batch pipeline caused 6-hour data delays, blocking product decisions.",
+      "The connected-vehicle platform had zero automation baseline — 100% of regression testing was manual, creating release bottlenecks and missed defects.",
     metrics: [
-      { icon: <Zap size={14} />, label: "Latency", value: "< 50ms p99" },
-      { icon: <Users size={14} />, label: "Daily events", value: "800M/day" },
-      { icon: <TrendingUp size={14} />, label: "Cost reduction", value: "42%" },
+      { icon: <Zap size={14} />, label: "Manual tests eliminated", value: "75%" },
+      { icon: <Users size={14} />, label: "Engineers impacted", value: "15+" },
+      { icon: <TrendingUp size={14} />, label: "Release confidence", value: "↑ Significantly" },
     ],
-    challenge:
-      "Migrating 800M+ daily events from batch to streaming without service disruption, while maintaining exactly-once semantics.",
     solution:
-      "Designed a dual-write architecture using Apache Kafka with consumer group partitioning and idempotent producers. Implemented backpressure signaling to prevent consumer lag during traffic spikes.",
+      "Built a Python/Pytest + Playwright automation framework from the ground up, taking scenarios from initial manual execution through full CI/CD integration via Jenkins and GitHub Actions. Designed modular test architecture covering functional, regression, integration, and API layers.",
     stack: [
-      { name: "Go", color: "#00ADD8" },
-      { name: "Apache Kafka", color: "#231F20" },
-      { name: "Kubernetes", color: "#326CE5" },
-      { name: "Terraform", color: "#623CE4" },
-      { name: "Datadog", color: "#632CA6" },
+      { name: "Python", color: "#3572A5" },
+      { name: "Pytest", color: "#3572A5" },
+      { name: "Playwright", color: "#2EAD33" },
+      { name: "Jenkins", color: "#D24939" },
+      { name: "GitHub Actions", color: "#2088FF" },
+      { name: "Postman", color: "#FF6C37" },
     ],
-    demo: "#",
-    repo: "#",
     featured: true,
   },
   {
-    name: "InferenceProxy",
-    tagline: "LLM request routing & caching layer",
+    name: "Defect Tracking System Modernization",
+    tagline: "Replaced legacy defect tracking with a streamlined modern system",
     problem:
-      "Unpredictable LLM API costs and 800ms+ latency were blocking AI feature adoption.",
+      "Legacy defect tracking had critical gaps — no notifications, no visibility into contributor history, and a field architecture that created friction across the entire QA team.",
     metrics: [
-      { icon: <Zap size={14} />, label: "P95 latency", value: "180ms" },
-      { icon: <Users size={14} />, label: "Cache hit rate", value: "67%" },
-      { icon: <TrendingUp size={14} />, label: "Cost savings", value: "$80K/mo" },
+      { icon: <Zap size={14} />, label: "Notification latency", value: "Real-time" },
+      { icon: <Users size={14} />, label: "QA team friction", value: "Eliminated" },
+      { icon: <TrendingUp size={14} />, label: "Defect visibility", value: "↑ Full history" },
     ],
-    challenge:
-      "Semantic caching of LLM responses is non-trivial — exact-match caching only hit 8% of requests.",
     solution:
-      "Built a semantic similarity cache using embedding vectors stored in pgvector. Implemented adaptive TTL based on prompt volatility scores, achieving 67% cache hit rate with <5% semantic drift.",
+      "Identified the gaps, built the business case, and led design and delivery of a modernized replacement. Introduced defect subscriptions, automated email notifications, contributor history views, and a streamlined field architecture — shipped with no prior tooling in place.",
     stack: [
-      { name: "TypeScript", color: "#3178C6" },
-      { name: "PostgreSQL", color: "#336791" },
-      { name: "Redis", color: "#DC382D" },
-      { name: "pgvector", color: "#336791" },
-      { name: "AWS Lambda", color: "#FF9900" },
+      { name: "JIRA", color: "#0052CC" },
+      { name: "Confluence", color: "#0052CC" },
+      { name: "GitHub", color: "#181717" },
+      { name: "Python", color: "#3572A5" },
     ],
-    demo: "#",
-    repo: "#",
     featured: true,
   },
   {
-    name: "ObsidianDB",
-    tagline: "Distributed time-series database",
+    name: "Connected-Vehicle Fleet Reservation Tool",
+    tagline: "Internal tool eliminating test vehicle scheduling conflicts",
     problem:
-      "Proprietary TSDB was costing $400K/year and couldn't handle custom retention policies.",
+      "Test engineers had no visibility into vehicle availability, causing scheduling conflicts, duplicated reservations, and wasted testing time across teams.",
     metrics: [
-      { icon: <Zap size={14} />, label: "Write throughput", value: "2M/sec" },
-      { icon: <Users size={14} />, label: "Data compressed", value: "8TB → 600GB" },
-      { icon: <TrendingUp size={14} />, label: "Annual savings", value: "$380K" },
+      { icon: <Zap size={14} />, label: "Scheduling conflicts", value: "Eliminated" },
+      { icon: <Users size={14} />, label: "Vehicles tracked", value: "Full fleet" },
+      { icon: <TrendingUp size={14} />, label: "Prior tooling", value: "None → Full" },
     ],
-    challenge:
-      "Achieving PromQL compatibility while supporting custom downsampling strategies across multi-tenant environments.",
     solution:
-      "Implemented a columnar storage engine with Gorilla compression achieving 13x compression ratio. Built a query planner that automatically routes to pre-computed rollups for historical queries.",
+      "Initiated and oversaw development of an internal reservation system providing real-time visibility into vehicle availability, reservation ownership, test duration, and current software versions per vehicle — built from scratch where no prior solution existed.",
     stack: [
-      { name: "Rust", color: "#DEA584" },
-      { name: "RocksDB", color: "#555555" },
-      { name: "gRPC", color: "#244C5A" },
-      { name: "Prometheus", color: "#E6522C" },
+      { name: "JavaScript", color: "#F7DF1E" },
+      { name: "HTML/CSS", color: "#E34C26" },
+      { name: "CANoe", color: "#8B0000" },
+      { name: "VMware", color: "#607078" },
     ],
-    repo: "#",
     featured: true,
   },
   {
-    name: "Cortex",
-    tagline: "Internal developer platform",
-    problem: "Developers spent 3+ hours/week on boilerplate infra setup.",
+    name: "API & Backend Validation Suite",
+    tagline: "Comprehensive REST/SOAP test suite for enterprise backend services",
+    problem:
+      "API changes were shipping without structured validation, causing data integrity issues and hard-to-reproduce production bugs.",
     metrics: [
-      { icon: <Zap size={14} />, label: "Onboard time", value: "3h → 15min" },
-      { icon: <Users size={14} />, label: "Teams using", value: "40+" },
-      { icon: <TrendingUp size={14} />, label: "Deploy freq.", value: "+300%" },
+      { icon: <Zap size={14} />, label: "Test coverage", value: "+10%" },
+      { icon: <Users size={14} />, label: "Post-release incidents", value: "↓ Reduced" },
+      { icon: <TrendingUp size={14} />, label: "API endpoints covered", value: "100%" },
     ],
-    challenge:
-      "Building a golden path that teams actually adopt without mandating it.",
     solution:
-      "Service templates with Backstage, automated PR checks, and one-command Kubernetes namespace provisioning.",
+      "Designed REST and SOAP API test suites using Postman and SoapUI, crafting complex request payloads to simulate real-world production traffic. Paired with SQL data validation queries to confirm end-to-end data integrity across integrated backend systems.",
     stack: [
-      { name: "TypeScript", color: "#3178C6" },
-      { name: "Backstage", color: "#9BF0E1" },
-      { name: "Helm", color: "#0F1689" },
-      { name: "Argo CD", color: "#EF7B4D" },
+      { name: "Postman", color: "#FF6C37" },
+      { name: "SoapUI", color: "#6CB33E" },
+      { name: "JMeter", color: "#D22128" },
+      { name: "SQL", color: "#336791" },
     ],
-    repo: "#",
     featured: false,
   },
 ];
@@ -136,8 +122,8 @@ export function Projects() {
             Things I&apos;ve built
           </h2>
           <p className="text-muted mt-3 max-w-xl">
-            Each project below includes the problem, scale metrics, and the
-            specific technical decisions that made them work.
+            Each initiative below includes the problem, the impact, and the
+            specific engineering decisions that made them work.
           </p>
         </motion.div>
 
@@ -153,7 +139,6 @@ export function Projects() {
                 className="border border-card-border bg-card rounded-xl p-6 hover:border-accent/30 transition-colors group"
               >
                 <div className="grid md:grid-cols-3 gap-6">
-                  {/* Left: Overview */}
                   <div className="md:col-span-2 space-y-4">
                     <div className="flex items-start justify-between gap-4">
                       <div>
@@ -195,14 +180,13 @@ export function Projects() {
 
                     <div>
                       <p className="text-xs font-mono text-emerald-400 mb-1">
-                        How we solved it
+                        How I solved it
                       </p>
                       <p className="text-sm text-muted leading-relaxed">
                         {project.solution}
                       </p>
                     </div>
 
-                    {/* Stack */}
                     <div className="flex flex-wrap gap-2 pt-1">
                       {project.stack.map((tech) => (
                         <span
@@ -220,7 +204,6 @@ export function Projects() {
                     </div>
                   </div>
 
-                  {/* Right: Metrics */}
                   <div className="space-y-3">
                     <p className="text-xs font-mono text-muted">Impact</p>
                     {project.metrics.map((m) => (
@@ -246,7 +229,6 @@ export function Projects() {
           </AnimatePresence>
         </div>
 
-        {/* Show more toggle */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
