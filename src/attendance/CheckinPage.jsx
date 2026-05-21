@@ -60,6 +60,8 @@ function CheckinForm({ token, onSuccess }) {
   const [noMembers, setNoMembers] = useState(false);
   const [remembered, setRemembered] = useState(false);
   const [emailMismatch, setEmailMismatch] = useState(null); // { member, newEmail }
+  const [autoLoading, setAutoLoading] = useState(false);
+  const autoAttempted = useRef(false);
 
   useEffect(() => {
     getMembers().then((m) => setNoMembers(m.length === 0));
@@ -130,35 +132,26 @@ function CheckinForm({ token, onSuccess }) {
     setLoading(false);
   }
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setError('');
-
-    if (!firstName.trim() || !lastName.trim() || !email.trim()) {
-      setError('Please fill in all fields.');
-      return;
-    }
-
-    // ── Sunday-morning check ────────────────────────────────
+  // Core check-in logic, used by both auto-checkin and manual submit
+  async function doCheckin(fn, ln, em) {
+    // ── Sunday-morning check ──────────────────────────────────
     const now = new Date();
-    const day = now.getDay();      // 0 = Sunday
-    const hour = now.getHours();   // 0–23
-    const CHECKIN_START = 6;       // 6:00 AM
-    const CHECKIN_END   = 14;      // 2:00 PM
+    const day = now.getDay();
+    const hour = now.getHours();
+    const CHECKIN_START = 6;
+    const CHECKIN_END   = 14;
     if (day !== 0 || hour < CHECKIN_START || hour >= CHECKIN_END) {
       setError('Check-in is only available on Sunday mornings between 6:00 AM and 2:00 PM.');
-      return;
+      return false;
     }
 
-    setLoading(true);
     try {
-      // ── Geofence check ──────────────────────────────────────
+      // ── Geofence check ────────────────────────────────────────
       const geo = await getGeofenceConfig().catch(() => ({ enabled: false }));
       if (geo.enabled || geo.lat) {
         if (!geo.lat || !geo.lon) {
           setError('Location check is enabled but the church location has not been set. Please contact your instructor.');
-          setLoading(false);
-          return;
+          return false;
         }
         setGeoStatus('Checking your location…');
         let position;
@@ -167,8 +160,7 @@ function CheckinForm({ token, onSuccess }) {
         } catch (geoErr) {
           setGeoStatus('');
           setError(geoErrorMessage(geoErr));
-          setLoading(false);
-          return;
+          return false;
         }
         const { latitude, longitude } = position.coords;
         const distMiles = getDistanceMiles(latitude, longitude, geo.lat, geo.lon);
@@ -181,47 +173,84 @@ function CheckinForm({ token, onSuccess }) {
             `Cannot check in: you are outside the church's allowed radius. You are ${distDisplay} away from the church location.`
           );
           setTimeout(() => {
-            const who = email.trim() || 'unknown';
+            const who = em || 'unknown';
             logActivity(
               'checkin_blocked',
-              `Check-in blocked: ${firstName.trim() || 'unknown'} ${lastName.trim() || ''} (${who}) was ${distDisplay} away from the church`,
+              `Check-in blocked: ${fn || 'unknown'} ${ln || ''} (${who}) was ${distDisplay} away from the church`,
               who
             ).catch(() => {});
           }, 0);
-          setLoading(false);
-          return;
+          return false;
         }
       }
 
-      // ── Token still active? ─────────────────────────────────
+      // ── Token still active? ───────────────────────────────────
       const current = await getCurrentToken().catch(() => null);
       if (!current || current.sessionId !== token.sessionId) {
         setError('This QR code is no longer active. Please scan the current one.');
-        setLoading(false);
-        return;
+        return false;
       }
 
-      // ── Membership check ────────────────────────────────────
-      const member = await findMember(firstName, lastName, email).catch(() => null);
+      // ── Membership check ──────────────────────────────────────
+      const member = await findMember(fn, ln, em).catch(() => null);
       if (!member) {
-        // Name match but wrong email?
-        const nameMatch = await findMemberByName(firstName, lastName).catch(() => null);
+        const nameMatch = await findMemberByName(fn, ln).catch(() => null);
         if (nameMatch) {
-          setEmailMismatch({ member: nameMatch, newEmail: email.trim().toLowerCase() });
-          setLoading(false);
-          return;
+          setEmailMismatch({ member: nameMatch, newEmail: em.trim().toLowerCase() });
+          return false;
         }
         setError('Your information could not be validated as a member. Please verify your first name, last name, and email and try again.');
-        setLoading(false);
-        return;
+        return false;
       }
 
       await completeCheckin(member);
+      return true;
     } catch {
       setError('Something went wrong. Please check your connection and try again.');
+      return false;
+    } finally {
+      setGeoStatus('');
     }
-    setGeoStatus('');
+  }
+
+  // Auto check-in for returning users — runs once when saved info is loaded
+  useEffect(() => {
+    if (!remembered || autoAttempted.current || noMembers) return;
+    autoAttempted.current = true;
+    setAutoLoading(true);
+    const saved = (() => {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch { return null; }
+    })();
+    if (!saved?.firstName) { setAutoLoading(false); return; }
+    doCheckin(saved.firstName, saved.lastName, saved.email).finally(() => {
+      setAutoLoading(false);
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [remembered, noMembers]);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setError('');
+
+    if (!firstName.trim() || !lastName.trim() || !email.trim()) {
+      setError('Please fill in all fields.');
+      return;
+    }
+
+    setLoading(true);
+    await doCheckin(firstName.trim(), lastName.trim(), email.trim());
     setLoading(false);
+  }
+
+  // ── Auto check-in loading screen ─────────────────────────────
+  if (autoLoading) {
+    return (
+      <div className="att-card att-checkin-card" style={{ textAlign: 'center' }}>
+        <div className="att-auto-spinner" />
+        <h2 className="att-checkin-title">Welcome back, {firstName}!</h2>
+        <p style={{ color: '#4a5568', marginTop: '0.5rem' }}>Signing you in…</p>
+      </div>
+    );
   }
 
   // ── Email mismatch modal ──────────────────────────────────────
