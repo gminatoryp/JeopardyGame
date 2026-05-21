@@ -167,7 +167,9 @@ export async function getRecords() {
 }
 
 export async function addRecord(record) {
-  await addDoc(RECORDS_COL, record);
+  // Deterministic ID prevents duplicate records if the same person submits twice simultaneously
+  const id = `${record.sessionId}_${record.email.replace(/[^a-z0-9]/g, '_')}`;
+  await setDoc(doc(RECORDS_COL, id), record);
 }
 
 export async function hasCheckedIn(sessionId, email) {
@@ -285,7 +287,7 @@ export async function logActivity(action, details, performedBy = 'system') {
 
 export function subscribeToActivityLog(callback) {
   return onSnapshot(
-    query(ACTIVITY_COL, orderBy('timestamp', 'desc')),
+    query(ACTIVITY_COL, orderBy('timestamp', 'desc'), limit(200)),
     (snap) => callback(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
   );
 }

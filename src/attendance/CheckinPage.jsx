@@ -61,10 +61,11 @@ function CheckinForm({ token, onSuccess }) {
   const [remembered, setRemembered] = useState(false);
   const [emailMismatch, setEmailMismatch] = useState(null); // { member, newEmail }
   const [autoLoading, setAutoLoading] = useState(false);
+  const [membersLoaded, setMembersLoaded] = useState(false);
   const autoAttempted = useRef(false);
 
   useEffect(() => {
-    getMembers().then((m) => setNoMembers(m.length === 0));
+    getMembers().then((m) => { setNoMembers(m.length === 0); setMembersLoaded(true); });
     // Pre-fill from last successful check-in on this device
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
@@ -215,7 +216,7 @@ function CheckinForm({ token, onSuccess }) {
 
   // Auto check-in for returning users — runs once when saved info is loaded
   useEffect(() => {
-    if (!remembered || autoAttempted.current || noMembers) return;
+    if (!remembered || !membersLoaded || autoAttempted.current || noMembers) return;
     autoAttempted.current = true;
     setAutoLoading(true);
     const saved = (() => {
@@ -226,7 +227,7 @@ function CheckinForm({ token, onSuccess }) {
       setAutoLoading(false);
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [remembered, noMembers]);
+  }, [remembered, membersLoaded, noMembers]);
 
   async function handleSubmit(e) {
     e.preventDefault();
