@@ -188,11 +188,20 @@ export async function getRecordsForSession(sessionId) {
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
-// Real-time listener — returns unsubscribe function
+// Real-time listener — capped at 2000 most recent check-ins to bound download size
 export function subscribeToRecords(callback) {
-  return onSnapshot(RECORDS_COL, (snap) => {
-    callback(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
-  });
+  return onSnapshot(
+    query(RECORDS_COL, orderBy('timestamp', 'desc'), limit(2000)),
+    (snap) => callback(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
+  );
+}
+
+// One-time fetch scoped to the last N weeks — use for historical reports/matrix
+export async function getRecentRecords(weeksBack = 52) {
+  const cutoff = Date.now() - weeksBack * 7 * 24 * 60 * 60 * 1000;
+  const q = query(RECORDS_COL, where('timestamp', '>=', cutoff), orderBy('timestamp', 'desc'));
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
 // ── CSV utilities (pure JS) ───────────────────────────────────
