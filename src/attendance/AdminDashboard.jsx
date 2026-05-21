@@ -27,6 +27,7 @@ import {
   subscribeToActivityLog,
   saveHeadcount,
   getHeadcount,
+  migrateMemberLowerFields,
 } from './storage';
 
 const MEMBER_ROLES = ['Admin', 'Manager', 'Counter', 'User'];
@@ -796,7 +797,11 @@ function MembersTab({ members, setMembers, dashboardUsers = [], role, currentUse
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [confirmRemove, setConfirmRemove] = useState(null); // { id, name }
+  const [migrateStatus, setMigrateStatus] = useState('');
+  const [migrateLoading, setMigrateLoading] = useState(false);
   const fileRef = useRef(null);
+
+  const needsMigration = members.some((m) => !m.firstNameLower);
 
   async function refresh() {
     const m = await getMembers();
@@ -887,6 +892,20 @@ function MembersTab({ members, setMembers, dashboardUsers = [], role, currentUse
     e.target.value = '';
   }
 
+  async function handleMigrate() {
+    setMigrateLoading(true);
+    setMigrateStatus('');
+    try {
+      const count = await migrateMemberLowerFields();
+      await refresh();
+      setMigrateStatus(count === 0 ? 'All members already up to date.' : `Migration complete — ${count} member(s) updated.`);
+      logActivity('members_migrated', `Name search fields backfilled for ${count} members`, currentUserEmail).catch(() => {});
+    } catch {
+      setMigrateStatus('Migration failed. Please try again.');
+    }
+    setMigrateLoading(false);
+  }
+
   function handleExportMembers() {
     const csv =
       'First Name,Last Name,Email\n' +
@@ -910,6 +929,19 @@ function MembersTab({ members, setMembers, dashboardUsers = [], role, currentUse
           onCancel={() => setConfirmRemove(null)}
         />
       )}
+      {needsMigration && role === 'admin' && (
+        <div className="att-card" style={{ background: '#fffbeb', border: '1px solid #f6e05e', marginBottom: '1rem' }}>
+          <h3 className="att-section-title" style={{ color: '#b7791f' }}>One-Time Migration Needed</h3>
+          <p style={{ color: '#744210', fontSize: '0.875rem', margin: '0.5rem 0 1rem' }}>
+            Some members are missing search index fields. Run this once to enable fast name lookup and prevent full-table scans during check-in.
+          </p>
+          <button className="att-btn att-btn-primary" onClick={handleMigrate} disabled={migrateLoading}>
+            {migrateLoading ? 'Migrating…' : 'Run Migration'}
+          </button>
+          {migrateStatus && <p style={{ marginTop: '0.75rem', fontSize: '0.875rem', color: '#2d3748' }}>{migrateStatus}</p>}
+        </div>
+      )}
+
       <div className="att-card att-members-add-card">
         <h3 className="att-section-title">Add Member</h3>
         <form onSubmit={handleAdd} className="att-inline-form">

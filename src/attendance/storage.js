@@ -88,10 +88,14 @@ export async function getMembers() {
 }
 
 export async function addMember(member) {
+  const firstName = member.firstName.trim();
+  const lastName = member.lastName.trim();
   await addDoc(MEMBERS_COL, {
-    firstName: member.firstName.trim(),
-    lastName: member.lastName.trim(),
+    firstName,
+    lastName,
     email: member.email.trim().toLowerCase(),
+    firstNameLower: firstName.toLowerCase(),
+    lastNameLower: lastName.toLowerCase(),
   });
 }
 
@@ -119,11 +123,15 @@ export async function bulkAddMembers(members) {
   for (const chunk of chunks) {
     const batch = writeBatch(db);
     chunk.forEach((member) => {
+      const firstName = member.firstName.trim();
+      const lastName = member.lastName.trim();
       const ref = doc(MEMBERS_COL);
       batch.set(ref, {
-        firstName: member.firstName.trim(),
-        lastName: member.lastName.trim(),
+        firstName,
+        lastName,
         email: member.email.trim().toLowerCase(),
+        firstNameLower: firstName.toLowerCase(),
+        lastNameLower: lastName.toLowerCase(),
       });
     });
     await batch.commit();
@@ -135,14 +143,45 @@ export async function updateMemberEmail(id, email) {
 }
 
 export async function findMemberByName(firstName, lastName) {
-  const snap = await getDocs(MEMBERS_COL);
   const fn = firstName.trim().toLowerCase();
   const ln = lastName.trim().toLowerCase();
-  const match = snap.docs.find((d) => {
+  // Use indexed lowercase fields if available (post-migration); fall back to full scan
+  const q = query(MEMBERS_COL, where('firstNameLower', '==', fn), where('lastNameLower', '==', ln));
+  const snap = await getDocs(q);
+  if (!snap.empty) {
+    const d = snap.docs[0];
+    return { id: d.id, ...d.data() };
+  }
+  // Fallback: full scan for members not yet migrated
+  const allSnap = await getDocs(MEMBERS_COL);
+  const match = allSnap.docs.find((d) => {
     const data = d.data();
     return data.firstName.toLowerCase() === fn && data.lastName.toLowerCase() === ln;
   });
   return match ? { id: match.id, ...match.data() } : null;
+}
+
+// One-time migration: backfill firstNameLower/lastNameLower on existing members
+export async function migrateMemberLowerFields() {
+  const snap = await getDocs(MEMBERS_COL);
+  const needsMigration = snap.docs.filter((d) => !d.data().firstNameLower);
+  if (needsMigration.length === 0) return 0;
+  const chunks = [];
+  for (let i = 0; i < needsMigration.length; i += 400) {
+    chunks.push(needsMigration.slice(i, i + 400));
+  }
+  for (const chunk of chunks) {
+    const batch = writeBatch(db);
+    chunk.forEach((d) => {
+      const { firstName, lastName } = d.data();
+      batch.update(d.ref, {
+        firstNameLower: firstName.toLowerCase(),
+        lastNameLower: lastName.toLowerCase(),
+      });
+    });
+    await batch.commit();
+  }
+  return needsMigration.length;
 }
 
 // Match by email first (indexed), then verify first+last name
