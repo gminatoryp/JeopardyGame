@@ -1215,6 +1215,7 @@ const ACTION_META = {
   geofence_toggled:         { label: 'Geofence',         color: '#4a5568', bg: '#f7fafc' },
   geofence_location_changed:{ label: 'Location Updated', color: '#4a5568', bg: '#f7fafc' },
   checkin_blocked:          { label: 'Blocked',          color: '#c05621', bg: '#fffaf0' },
+  member_email_updated:     { label: 'Email Updated',    color: '#b7791f', bg: '#fffbeb' },
 };
 
 function ActivityLogTab() {

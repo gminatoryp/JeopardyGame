@@ -130,6 +130,21 @@ export async function bulkAddMembers(members) {
   }
 }
 
+export async function updateMemberEmail(id, email) {
+  await setDoc(doc(db, 'members', id), { email: email.trim().toLowerCase() }, { merge: true });
+}
+
+export async function findMemberByName(firstName, lastName) {
+  const snap = await getDocs(MEMBERS_COL);
+  const fn = firstName.trim().toLowerCase();
+  const ln = lastName.trim().toLowerCase();
+  const match = snap.docs.find((d) => {
+    const data = d.data();
+    return data.firstName.toLowerCase() === fn && data.lastName.toLowerCase() === ln;
+  });
+  return match ? { id: match.id, ...match.data() } : null;
+}
+
 // Match by email first (indexed), then verify first+last name
 export async function findMember(firstName, lastName, email) {
   const q = query(MEMBERS_COL, where('email', '==', email.trim().toLowerCase()));

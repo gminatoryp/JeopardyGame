@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { decodeToken, isTokenValid, formatWeekLabel } from './tokenUtils';
-import { hasCheckedIn, addRecord, findMember, getMembers, getCurrentToken, getGeofenceConfig, logActivity } from './storage';
+import { hasCheckedIn, addRecord, findMember, findMemberByName, updateMemberEmail, getMembers, getCurrentToken, getGeofenceConfig, logActivity } from './storage';
 import { getCurrentPosition, getDistanceMiles, geoErrorMessage } from './geoUtils';
 
 function getTokenFromUrl() {
@@ -59,6 +59,7 @@ function CheckinForm({ token, onSuccess }) {
   const [geoStatus, setGeoStatus] = useState('');
   const [noMembers, setNoMembers] = useState(false);
   const [remembered, setRemembered] = useState(false);
+  const [emailMismatch, setEmailMismatch] = useState(null); // { member, newEmail }
 
   useEffect(() => {
     getMembers().then((m) => setNoMembers(m.length === 0));
@@ -73,6 +74,61 @@ function CheckinForm({ token, onSuccess }) {
       }
     } catch { /* ignore */ }
   }, []);
+
+  async function completeCheckin(member) {
+    try {
+      const alreadyIn = await hasCheckedIn(token.sessionId, member.email);
+      if (alreadyIn) {
+        setError('You have already checked in for this week.');
+        setLoading(false);
+        return;
+      }
+    } catch { /* proceed if duplicate check fails */ }
+
+    const ts = Date.now();
+    await addRecord({
+      sessionId: token.sessionId,
+      weekStart: token.weekStart,
+      firstName: member.firstName,
+      lastName: member.lastName,
+      email: member.email,
+      timestamp: ts,
+    });
+
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        firstName: member.firstName,
+        lastName: member.lastName,
+        email: member.email,
+      }));
+    } catch { /* ignore */ }
+
+    onSuccess({ firstName: member.firstName, lastName: member.lastName, weekStart: token.weekStart, timestamp: ts });
+
+    setTimeout(() => {
+      logActivity('check_in', `${member.firstName} ${member.lastName} (${member.email}) checked in`, member.email).catch(() => {});
+    }, 0);
+  }
+
+  async function handleEmailUpdateConfirm() {
+    setLoading(true);
+    const { member, newEmail } = emailMismatch;
+    setEmailMismatch(null);
+    try {
+      await updateMemberEmail(member.id, newEmail);
+      setTimeout(() => {
+        logActivity(
+          'member_email_updated',
+          `Email updated for ${member.firstName} ${member.lastName}: ${member.email} → ${newEmail}`,
+          newEmail
+        ).catch(() => {});
+      }, 0);
+      await completeCheckin({ ...member, email: newEmail });
+    } catch {
+      setError('Something went wrong updating your email. Please try again.');
+    }
+    setLoading(false);
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -148,60 +204,48 @@ function CheckinForm({ token, onSuccess }) {
       // ── Membership check ────────────────────────────────────
       const member = await findMember(firstName, lastName, email).catch(() => null);
       if (!member) {
-        setError('Your name and email were not found in the member list. Please contact your instructor.');
+        // Name match but wrong email?
+        const nameMatch = await findMemberByName(firstName, lastName).catch(() => null);
+        if (nameMatch) {
+          setEmailMismatch({ member: nameMatch, newEmail: email.trim().toLowerCase() });
+          setLoading(false);
+          return;
+        }
+        setError('Your information could not be validated as a member. Please verify your first name, last name, and email and try again.');
         setLoading(false);
         return;
       }
 
-      // ── Duplicate check (non-blocking — rules may restrict reads) ───
-      try {
-        const alreadyIn = await hasCheckedIn(token.sessionId, email);
-        if (alreadyIn) {
-          setError('You have already checked in for this week.');
-          setLoading(false);
-          return;
-        }
-      } catch {
-        // If duplicate check fails due to rules, proceed — Firestore
-        // will still create the record; adjust rules to fix duplicate detection.
-      }
-
-      // ── Record check-in ─────────────────────────────────────
-      const ts = Date.now();
-      await addRecord({
-        sessionId: token.sessionId,
-        weekStart: token.weekStart,
-        firstName: member.firstName,
-        lastName: member.lastName,
-        email: member.email,
-        timestamp: ts,
-      });
-
-      // Save info for next visit so the form is pre-filled
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({
-          firstName: member.firstName,
-          lastName: member.lastName,
-          email: member.email,
-        }));
-      } catch { /* ignore */ }
-
-      // Signal success immediately before any optional logging
-      onSuccess({ firstName: member.firstName, lastName: member.lastName, weekStart: token.weekStart, timestamp: ts });
-
-      // Fire-and-forget activity log — runs after success, never blocks or throws
-      setTimeout(() => {
-        logActivity(
-          'check_in',
-          `${member.firstName} ${member.lastName} (${member.email}) checked in`,
-          member.email
-        ).catch(() => {});
-      }, 0);
+      await completeCheckin(member);
     } catch {
       setError('Something went wrong. Please check your connection and try again.');
     }
     setGeoStatus('');
     setLoading(false);
+  }
+
+  // ── Email mismatch modal ──────────────────────────────────────
+  if (emailMismatch) {
+    return (
+      <div className="att-card att-checkin-card">
+        <h2 className="att-checkin-title">Confirm Your Email</h2>
+        <p style={{ margin: '1rem 0', color: '#4a5568', lineHeight: 1.5 }}>
+          We found your name — <strong>{emailMismatch.member.firstName} {emailMismatch.member.lastName}</strong> — but the email on file is different from what you entered.
+        </p>
+        <p style={{ marginBottom: '1.25rem', color: '#4a5568' }}>
+          Would you like to update your email to <strong>{emailMismatch.newEmail}</strong>?
+        </p>
+        {error && <p className="att-error">{error}</p>}
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <button className="att-btn att-btn-primary" disabled={loading} onClick={handleEmailUpdateConfirm}>
+            Yes, use this email
+          </button>
+          <button className="att-btn att-btn-secondary" onClick={() => setEmailMismatch(null)}>
+            Go back
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
